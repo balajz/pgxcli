@@ -66,6 +66,20 @@ func Load() (*Config, error) {
 	return &cfg, nil
 }
 
+func GetDefaultConfig() (*Config, error) {
+	defaultV := viper.New()
+	defaultV.SetConfigType("toml")
+	if err := defaultV.ReadConfig(bytes.NewReader(defaultConfigFile)); err != nil {
+		return nil, fmt.Errorf("read default config: %w", err)
+	}
+
+	var cfg Config
+	if err := defaultV.Unmarshal(&cfg); err != nil {
+		return nil, fmt.Errorf("unmarshal config: %w", err)
+	}
+	return &cfg, nil
+}
+
 // returns the configuration file path or error, example: ~/.config/pgxcli/config.toml
 func UserConfigPath() (string, error) {
 	userdir, err := os.UserConfigDir()
