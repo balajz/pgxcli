@@ -37,8 +37,7 @@ func Test_shouldAskForPassword(t *testing.T) {
 			name: "pgx invalid password error and prompt",
 			args: args{err: &pgconn.PgError{Code: "28P01"}, neverPrompt: false},
 			want: true,
-		},  
-
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

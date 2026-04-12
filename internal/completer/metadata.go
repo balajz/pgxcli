@@ -100,7 +100,6 @@ type RefreshRequest struct {
 
 // DatabaseExecutor defines the interface for executing database queries to fetch metadata
 type DatabaseExecutor interface {
-
 	// query schema names
 	Schemas() ([]string, error)
 

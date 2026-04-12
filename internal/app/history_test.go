@@ -1,4 +1,4 @@
-package repl
+package app
 
 import (
 	"encoding/json"

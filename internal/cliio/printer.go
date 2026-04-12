@@ -1,4 +1,4 @@
-package repl
+package cliio
 
 import (
 	"bytes"
@@ -8,17 +8,72 @@ import (
 	"os/exec"
 	"runtime"
 	"syscall"
+	"time"
 
-	"golang.org/x/term"
-
+	"github.com/charmbracelet/x/term"
+	"github.com/fatih/color"
 	"github.com/google/shlex"
 )
+
+var (
+	printErr  = color.New(color.FgHiRed).FprintfFunc()
+	printInfo = color.New(color.FgWhite).FprintfFunc()
+	printTime = color.New(color.FgHiCyan).FprintfFunc()
+)
+
+type Printer interface {
+	SetOut(out io.Writer)
+	SetErrOut(errOut io.Writer)
+	Print(str string)
+	PrintError(err error)
+	PrintTime(time time.Duration)
+	PrintViaPager(str string)
+}
+
+type PgxPrinter struct {
+	out    io.Writer
+	errOut io.Writer
+}
+
+func NewPgxPrinter(out io.Writer, errOut io.Writer) *PgxPrinter {
+	return &PgxPrinter{out: out, errOut: errOut}
+}
+
+func (p *PgxPrinter) SetOut(out io.Writer) {
+	p.out = out
+}
+
+func (p *PgxPrinter) SetErrOut(errOut io.Writer) {
+	p.errOut = errOut
+}
+
+func (p *PgxPrinter) Print(str string) {
+	printInfo(p.out, str)
+}
+
+func (p *PgxPrinter) PrintError(err error) {
+	printErr(p.errOut, "%v\n", err)
+}
+
+func (p *PgxPrinter) PrintTime(time time.Duration) {
+	printTime(p.out, "Time: %.3fs\n", time.Seconds())
+}
+
+func (p *PgxPrinter) PrintViaPager(str string) {
+	err := EchoViaPager(func(w io.Writer) error {
+		_, err := io.WriteString(w, str)
+		return err
+	})
+	if err != nil {
+		p.PrintError(err)
+	}
+}
 
 func EchoViaPager(writeFn func(io.Writer) error) error {
 	stdout := os.Stdout
 	stdin := os.Stdin
 
-	if !term.IsTerminal(int(stdin.Fd())) || !term.IsTerminal(int(stdout.Fd())) {
+	if !term.IsTerminal(stdin.Fd()) || !term.IsTerminal(stdout.Fd()) {
 		return writeFn(stdout)
 	}
 
