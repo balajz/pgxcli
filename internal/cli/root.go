@@ -121,9 +121,6 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 				if finalUser == "" {
 					finalUser = getDefaultUser()
 				}
-				if finalDatabase == "" {
-					finalDatabase = osUser
-				}
 			}
 
 			postgres := database.New(cliCtx.Logger.Logger)
