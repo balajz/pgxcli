@@ -159,7 +159,11 @@ func lineCount(str string) int {
 	if str == "" {
 		return 0
 	}
-	return strings.Count(str, "\n") + 1
+	count := strings.Count(str, "\n")
+	if strings.HasSuffix(str, "\n") {
+		return count
+	}
+	return count + 1
 }
 
 func ensureTrailingNewline(str string) string {

@@ -109,3 +109,24 @@ pager = "sometimes"
 	assert.Contains(t, err.Error(), "validate config")
 	assert.Contains(t, err.Error(), "pager mode must be one of: auto, always, never")
 }
+
+func TestLoad_ValidationAllowsTrimmedPagerMode(t *testing.T) {
+	setIsolatedUserConfigEnv(t)
+
+	userConfigPath, err := UserConfigPath()
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(userConfigPath), 0o700))
+
+	userConfig := `[main]
+prompt = "test> "
+style = "monokai"
+history_file = "default"
+log_file = "default"
+pager = " auto "
+`
+	require.NoError(t, os.WriteFile(userConfigPath, []byte(userConfig), 0o644))
+
+	cfg, err := Load()
+	require.NoError(t, err)
+	assert.Equal(t, " auto ", cfg.Main.Pager)
+}

@@ -84,6 +84,14 @@ func TestShouldUsePager(t *testing.T) {
 	assert.True(t, basePrinter.shouldUsePager(strings.Repeat("line\n", 10)))
 }
 
+func TestLineCount(t *testing.T) {
+	assert.Equal(t, 0, lineCount(""))
+	assert.Equal(t, 1, lineCount("a"))
+	assert.Equal(t, 1, lineCount("a\n"))
+	assert.Equal(t, 2, lineCount("a\nb"))
+	assert.Equal(t, 2, lineCount("a\nb\n"))
+}
+
 func TestEnsureTrailingNewline(t *testing.T) {
 	assert.Equal(t, "", ensureTrailingNewline(""))
 	assert.Equal(t, "hello\n", ensureTrailingNewline("hello"))
