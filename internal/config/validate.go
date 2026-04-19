@@ -1,6 +1,9 @@
 package config
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 func validate(cfg Config) error {
 	var errs []error
@@ -16,6 +19,15 @@ func validate(cfg Config) error {
 	}
 	if cfg.Main.LogFile == "" {
 		errs = append(errs, errors.New("log file path must not be empty"))
+	}
+	if cfg.Main.Pager == "" {
+		errs = append(errs, errors.New("pager mode must not be empty"))
+	} else {
+		switch strings.ToLower(cfg.Main.Pager) {
+		case "auto", "always", "never":
+		default:
+			errs = append(errs, errors.New("pager mode must be one of: auto, always, never"))
+		}
 	}
 
 	return errors.Join(errs...)
