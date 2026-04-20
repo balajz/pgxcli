@@ -22,3 +22,9 @@ history_file = "default"
 
 # log
 log_file = "default"
+
+# Pager behavior for long output:
+# auto   - use pager only when output is large
+# always - always use pager in interactive terminal mode
+# never  - never use pager
+pager = "auto"

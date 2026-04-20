@@ -1,12 +1,13 @@
 package cliio
 
 import (
-	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -21,9 +22,19 @@ var (
 	printTime = color.New(color.FgHiCyan).FprintfFunc()
 )
 
+const (
+	PagerModeAuto   = "auto"
+	PagerModeAlways = "always"
+	PagerModeNever  = "never"
+
+	defaultTerminalHeight = 24
+	autoPagerMinBytes     = 4096
+)
+
 type Printer interface {
 	SetOut(out io.Writer)
 	SetErrOut(errOut io.Writer)
+	SetPagerMode(mode string) error
 	Print(str string)
 	PrintError(err error)
 	PrintTime(time time.Duration)
@@ -33,10 +44,35 @@ type Printer interface {
 type PgxPrinter struct {
 	out    io.Writer
 	errOut io.Writer
+
+	pagerMode      string
+	isTerminal     bool
+	terminalHeight int
+
+	pagerPath      string
+	pagerArgs      []string
+	pagerSupported bool
 }
 
 func NewPgxPrinter(out io.Writer, errOut io.Writer) *PgxPrinter {
-	return &PgxPrinter{out: out, errOut: errOut}
+	p := &PgxPrinter{
+		out:            out,
+		errOut:         errOut,
+		pagerMode:      PagerModeAuto,
+		isTerminal:     term.IsTerminal(os.Stdin.Fd()) && term.IsTerminal(os.Stdout.Fd()),
+		terminalHeight: detectTerminalHeight(os.Stdout.Fd()),
+		pagerPath:      "",
+		pagerArgs:      nil,
+		pagerSupported: false,
+	}
+
+	if pagerPath, pagerArgs, ok := resolvePagerCommand(); ok {
+		p.pagerPath = pagerPath
+		p.pagerArgs = pagerArgs
+		p.pagerSupported = true
+	}
+
+	return p
 }
 
 func (p *PgxPrinter) SetOut(out io.Writer) {
@@ -45,6 +81,21 @@ func (p *PgxPrinter) SetOut(out io.Writer) {
 
 func (p *PgxPrinter) SetErrOut(errOut io.Writer) {
 	p.errOut = errOut
+}
+
+func (p *PgxPrinter) SetPagerMode(mode string) error {
+	normalized := strings.ToLower(strings.TrimSpace(mode))
+	if normalized == "" {
+		normalized = PagerModeAuto
+	}
+
+	switch normalized {
+	case PagerModeAuto, PagerModeAlways, PagerModeNever:
+		p.pagerMode = normalized
+		return nil
+	default:
+		return fmt.Errorf("invalid pager mode %q, expected one of: auto, always, never", mode)
+	}
 }
 
 func (p *PgxPrinter) Print(str string) {
@@ -60,8 +111,17 @@ func (p *PgxPrinter) PrintTime(time time.Duration) {
 }
 
 func (p *PgxPrinter) PrintViaPager(str string) {
-	err := EchoViaPager(func(w io.Writer) error {
-		_, err := io.WriteString(w, str)
+	output := ensureTrailingNewline(str)
+
+	if !p.shouldUsePager(str) {
+		if _, err := io.WriteString(p.out, output); err != nil {
+			p.PrintError(err)
+		}
+		return
+	}
+
+	err := p.echoViaPager(func(w io.Writer) error {
+		_, err := io.WriteString(w, output)
 		return err
 	})
 	if err != nil {
@@ -70,33 +130,67 @@ func (p *PgxPrinter) PrintViaPager(str string) {
 }
 
 func EchoViaPager(writeFn func(io.Writer) error) error {
-	stdout := os.Stdout
-	stdin := os.Stdin
-
-	if !term.IsTerminal(stdin.Fd()) || !term.IsTerminal(stdout.Fd()) {
-		return writeFn(stdout)
-	}
-
-	pagerCmd := getPager()
-
-	if tryPipePager(pagerCmd, writeFn) {
-		return nil
-	}
-
-	if tryTempfilePager(pagerCmd, writeFn) {
-		return nil
-	}
-
-	return writeFn(stdout)
+	p := NewPgxPrinter(os.Stdout, os.Stderr)
+	return p.echoViaPager(writeFn)
 }
 
-func tryPipePager(pagerCmd []string, writeFn func(io.Writer) error) bool {
-	cmdPath, err := exec.LookPath(pagerCmd[0])
-	if err != nil {
+func (p *PgxPrinter) shouldUsePager(str string) bool {
+	switch p.pagerMode {
+	case PagerModeNever:
 		return false
+	case PagerModeAlways:
+		return p.isTerminal && p.pagerSupported
+	default:
+		if !p.isTerminal || !p.pagerSupported {
+			return false
+		}
+		return len(str) >= autoPagerMinBytes || lineCount(str) > p.autoPagerLineThreshold()
+	}
+}
+
+func (p *PgxPrinter) autoPagerLineThreshold() int {
+	if p.terminalHeight <= 2 {
+		return 1
+	}
+	return p.terminalHeight - 2
+}
+
+func lineCount(str string) int {
+	if str == "" {
+		return 0
+	}
+	count := strings.Count(str, "\n")
+	if strings.HasSuffix(str, "\n") {
+		return count
+	}
+	return count + 1
+}
+
+func ensureTrailingNewline(str string) string {
+	if str == "" || strings.HasSuffix(str, "\n") {
+		return str
+	}
+	return str + "\n"
+}
+
+func (p *PgxPrinter) echoViaPager(writeFn func(io.Writer) error) error {
+	if !p.isTerminal || !p.pagerSupported {
+		return writeFn(p.out)
 	}
 
-	cmd := exec.Command(cmdPath, pagerCmd[1:]...)
+	if p.tryPipePager(writeFn) {
+		return nil
+	}
+
+	if p.tryTempfilePager(writeFn) {
+		return nil
+	}
+
+	return writeFn(p.out)
+}
+
+func (p *PgxPrinter) tryPipePager(writeFn func(io.Writer) error) bool {
+	cmd := exec.Command(p.pagerPath, p.pagerArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	stdin, err := cmd.StdinPipe()
@@ -115,11 +209,7 @@ func tryPipePager(pagerCmd []string, writeFn func(io.Writer) error) bool {
 	return writeErr == nil && waiterr == nil
 }
 
-func tryTempfilePager(pagerCmd []string, writerFn func(io.Writer) error) bool {
-	cmdPath, err := exec.LookPath(pagerCmd[0])
-	if err != nil {
-		return false
-	}
+func (p *PgxPrinter) tryTempfilePager(writerFn func(io.Writer) error) bool {
 	tmp, err := os.CreateTemp("", "pager-*")
 	if err != nil {
 		return false
@@ -128,17 +218,15 @@ func tryTempfilePager(pagerCmd []string, writerFn func(io.Writer) error) bool {
 		_ = os.Remove(tmp.Name())
 	}()
 
-	buf := &bytes.Buffer{}
-	if err := writerFn(buf); err != nil {
+	if err := writerFn(tmp); err != nil {
+		_ = tmp.Close()
+		return false
+	}
+	if err := tmp.Close(); err != nil {
 		return false
 	}
 
-	if _, err := tmp.Write(buf.Bytes()); err != nil {
-		return false
-	}
-	_ = tmp.Close()
-
-	cmd := exec.Command(cmdPath, tmp.Name())
+	cmd := exec.Command(p.pagerPath, append(p.pagerArgs, tmp.Name())...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -160,6 +248,28 @@ func waitIgnoringInterrupt(w waiter) error {
 		}
 		return err
 	}
+}
+
+func detectTerminalHeight(fd uintptr) int {
+	_, height, err := term.GetSize(fd)
+	if err != nil || height <= 0 {
+		return defaultTerminalHeight
+	}
+	return height
+}
+
+func resolvePagerCommand() (string, []string, bool) {
+	pagerCmd := getPager()
+	if len(pagerCmd) == 0 {
+		return "", nil, false
+	}
+
+	cmdPath, err := exec.LookPath(pagerCmd[0])
+	if err != nil {
+		return "", nil, false
+	}
+
+	return cmdPath, pagerCmd[1:], true
 }
 
 func getPager() []string {

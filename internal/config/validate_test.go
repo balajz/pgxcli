@@ -16,6 +16,7 @@ func TestValidate_Success(t *testing.T) {
 			Style:       "monokai",
 			HistoryFile: "default",
 			LogFile:     "default",
+			Pager:       "auto",
 		},
 	}
 
@@ -30,6 +31,7 @@ func TestValidate_MultipleErrors(t *testing.T) {
 			Style:       "",
 			HistoryFile: "",
 			LogFile:     "",
+			Pager:       "",
 		},
 	}
 
@@ -39,6 +41,7 @@ func TestValidate_MultipleErrors(t *testing.T) {
 	assert.Contains(t, err.Error(), "style must not be empty")
 	assert.Contains(t, err.Error(), "history file path must not be empty")
 	assert.Contains(t, err.Error(), "log file path must not be empty")
+	assert.Contains(t, err.Error(), "pager mode must not be empty")
 }
 
 func TestLoad_ValidationFailsOnEmptyPrompt(t *testing.T) {
@@ -53,6 +56,7 @@ prompt = ""
 style = "monokai"
 history_file = "default"
 log_file = "default"
+pager = "auto"
 `
 	require.NoError(t, os.WriteFile(userConfigPath, []byte(userConfig), 0o644))
 
@@ -74,6 +78,7 @@ prompt = "test> "
 style = ""
 history_file = "default"
 log_file = "default"
+pager = "auto"
 `
 	require.NoError(t, os.WriteFile(userConfigPath, []byte(userConfig), 0o644))
 
@@ -81,4 +86,47 @@ log_file = "default"
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "validate config")
 	assert.Contains(t, err.Error(), "style must not be empty")
+}
+
+func TestLoad_ValidationFailsOnInvalidPagerMode(t *testing.T) {
+	setIsolatedUserConfigEnv(t)
+
+	userConfigPath, err := UserConfigPath()
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(userConfigPath), 0o700))
+
+	userConfig := `[main]
+prompt = "test> "
+style = "monokai"
+history_file = "default"
+log_file = "default"
+pager = "sometimes"
+`
+	require.NoError(t, os.WriteFile(userConfigPath, []byte(userConfig), 0o644))
+
+	_, err = Load()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "validate config")
+	assert.Contains(t, err.Error(), "pager mode must be one of: auto, always, never")
+}
+
+func TestLoad_ValidationAllowsTrimmedPagerMode(t *testing.T) {
+	setIsolatedUserConfigEnv(t)
+
+	userConfigPath, err := UserConfigPath()
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(userConfigPath), 0o700))
+
+	userConfig := `[main]
+prompt = "test> "
+style = "monokai"
+history_file = "default"
+log_file = "default"
+pager = " auto "
+`
+	require.NoError(t, os.WriteFile(userConfigPath, []byte(userConfig), 0o644))
+
+	cfg, err := Load()
+	require.NoError(t, err)
+	assert.Equal(t, " auto ", cfg.Main.Pager)
 }

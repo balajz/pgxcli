@@ -53,6 +53,9 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 				return err
 			}
 			cliCtx.config = cfg
+			if err := cliCtx.Printer.SetPagerMode(cfg.Main.Pager); err != nil {
+				return err
+			}
 
 			logger, err := logger.InitLogger(bool(debugFlag), cfg.Main.LogFile)
 			if err != nil {

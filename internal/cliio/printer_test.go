@@ -1,7 +1,10 @@
 package cliio
 
 import (
+	"bytes"
 	"errors"
+	"io"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -43,4 +46,66 @@ func Test_waitIgnoringInterrupt_ReturnOtherError(t *testing.T) {
 
 	err := waitIgnoringInterrupt(fw)
 	assert.Equal(t, someErr, err)
+}
+
+func TestSetPagerMode(t *testing.T) {
+	p := &PgxPrinter{}
+
+	assert.NoError(t, p.SetPagerMode("AUTO"))
+	assert.Equal(t, PagerModeAuto, p.pagerMode)
+
+	assert.NoError(t, p.SetPagerMode("always"))
+	assert.Equal(t, PagerModeAlways, p.pagerMode)
+
+	assert.NoError(t, p.SetPagerMode("never"))
+	assert.Equal(t, PagerModeNever, p.pagerMode)
+
+	err := p.SetPagerMode("invalid")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid pager mode")
+}
+
+func TestShouldUsePager(t *testing.T) {
+	basePrinter := &PgxPrinter{
+		isTerminal:     true,
+		pagerSupported: true,
+		terminalHeight: 10,
+	}
+
+	basePrinter.pagerMode = PagerModeNever
+	assert.False(t, basePrinter.shouldUsePager(strings.Repeat("a", 10000)))
+
+	basePrinter.pagerMode = PagerModeAlways
+	assert.True(t, basePrinter.shouldUsePager("small output"))
+
+	basePrinter.pagerMode = PagerModeAuto
+	assert.False(t, basePrinter.shouldUsePager("small output"))
+	assert.True(t, basePrinter.shouldUsePager(strings.Repeat("a", autoPagerMinBytes)))
+	assert.True(t, basePrinter.shouldUsePager(strings.Repeat("line\n", 10)))
+}
+
+func TestLineCount(t *testing.T) {
+	assert.Equal(t, 0, lineCount(""))
+	assert.Equal(t, 1, lineCount("a"))
+	assert.Equal(t, 1, lineCount("a\n"))
+	assert.Equal(t, 2, lineCount("a\nb"))
+	assert.Equal(t, 2, lineCount("a\nb\n"))
+}
+
+func TestEnsureTrailingNewline(t *testing.T) {
+	assert.Equal(t, "", ensureTrailingNewline(""))
+	assert.Equal(t, "hello\n", ensureTrailingNewline("hello"))
+	assert.Equal(t, "hello\n", ensureTrailingNewline("hello\n"))
+}
+
+func TestPrintViaPager_AppendsNewlineWhenNotPresent(t *testing.T) {
+	out := &bytes.Buffer{}
+	p := &PgxPrinter{
+		out:       out,
+		errOut:    io.Discard,
+		pagerMode: PagerModeNever,
+	}
+
+	p.PrintViaPager("SELECT 9")
+	assert.Equal(t, "SELECT 9\n", out.String())
 }
