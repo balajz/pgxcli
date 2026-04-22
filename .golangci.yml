@@ -1,58 +1,58 @@
 version: "2"
-
 run:
-  timeout: 5m
-
+  tests: false
 linters:
   enable:
-    - errcheck
-    - ineffassign
-    - staticcheck
-    - unused
-    - gocyclo
     - goconst
+    - gocyclo
     - misspell
+    - revive
     - unconvert
     - unparam
-    - revive
-
+  settings:
+    gocyclo:
+      min-complexity: 15
+    misspell:
+      locale: US
+    revive:
+      confidence: 0.8
+      severity: warning
+      rules:
+        - name: exported
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
   exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     paths:
-      - '(.+)_test\.go'
       - internal/completer
-      - internal/repl/edit_command_buffer
-
-settings:
-  gocyclo:
-    min-complexity: 15
-
-  misspell:
-    locale: US
-
-  revive:
-    severity: warning
-    confidence: 0.8
-    rules:
-      - name: exported
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: if-return
-      - name: increment-decrement
-      - name: var-naming
-      - name: var-declaration
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
-
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
