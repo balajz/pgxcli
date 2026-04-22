@@ -6,10 +6,16 @@ import (
 	pg_query "github.com/pganalyze/pg_query_go/v6"
 )
 
+const (
+	commandTypeInvalid = "INVALID"
+	commandTypeQuery   = "QUERY"
+	commandTypeExecute = "EXECUTE"
+)
+
 func CommandType(sql string) string {
 	trimmed := strings.TrimSpace(sql)
 	if trimmed == "" {
-		return "INVALID"
+		return commandTypeInvalid
 	}
 
 	if result, ok := classifyFast(trimmed); ok {
@@ -39,13 +45,13 @@ func classifyFast(sql string) (string, bool) {
 		if hasToken(sql, "INTO") {
 			return "", false
 		}
-		return "QUERY", true
-	case "SHOW", "EXPLAIN", "TABLE", "VALUES", "EXECUTE":
-		return "QUERY", true
+		return commandTypeQuery, true
+	case "SHOW", "EXPLAIN", "TABLE", "VALUES", commandTypeExecute:
+		return commandTypeQuery, true
 	case "BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE", "START",
 		"SET", "VACUUM", "ANALYZE", "REINDEX", "GRANT", "REVOKE",
 		"CREATE", "ALTER", "DROP", "TRUNCATE", "MERGE":
-		return "EXECUTE", true
+		return commandTypeExecute, true
 	default:
 		return "", false
 	}
@@ -87,11 +93,11 @@ func hasToken(sql string, token string) bool {
 func classifyWithAST(sql string) string {
 	tree, err := pg_query.Parse(sql)
 	if err != nil {
-		return "INVALID"
+		return commandTypeInvalid
 	}
 
 	if len(tree.Stmts) == 0 {
-		return "INVALID"
+		return commandTypeInvalid
 	}
 
 	hasWrite := false
@@ -150,22 +156,22 @@ func classifyWithAST(sql string) string {
 	}
 
 	if hasWrite {
-		return "EXECUTE"
+		return commandTypeExecute
 	}
-	return "QUERY"
+	return commandTypeQuery
 }
 
 // IsQuery returns true if the SQL statement is a read-only query.
 func IsQuery(sql string) bool {
-	return CommandType(sql) == "QUERY"
+	return CommandType(sql) == commandTypeQuery
 }
 
 // IsExecute returns true if the SQL statement modifies data.
 func IsExecute(sql string) bool {
-	return CommandType(sql) == "EXECUTE"
+	return CommandType(sql) == commandTypeExecute
 }
 
 // IsValid returns true if the SQL statement can be parsed successfully.
 func IsValid(sql string) bool {
-	return classifyWithAST(strings.TrimSpace(sql)) != "INVALID"
+	return classifyWithAST(strings.TrimSpace(sql)) != commandTypeInvalid
 }
