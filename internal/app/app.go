@@ -30,7 +30,7 @@ type PgxCLI struct {
 	logger  *slog.Logger
 }
 
-func NewPgxCLI(config *config.Config, printer cliio.Printer, logger *slog.Logger) (*PgxCLI, error) {
+func New(config *config.Config, printer cliio.Printer, logger *slog.Logger) (*PgxCLI, error) {
 	history, entries := newHistory(config.Main.HistoryFile, logger)
 	reader, err := NewPgxReader()
 	if err != nil {
@@ -124,6 +124,10 @@ func (p *PgxCLI) Start(ctx context.Context, client *database.Client) {
 			}
 		}
 	}
+}
+
+func (p *PgxCLI) SetAutocompleter(keywords []string) {
+	p.prompt.SetAutocompleter(keywords)
 }
 
 func (p *PgxCLI) Close() error {

@@ -12,6 +12,7 @@ import (
 	"github.com/balaji01-4d/pgxcli/internal/config"
 	"github.com/balaji01-4d/pgxcli/internal/database"
 	"github.com/balaji01-4d/pgxcli/internal/logger"
+	"github.com/balaji01-4d/pgxcli/internal/parser"
 	"github.com/balaji01-4d/pgxcli/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -41,6 +42,8 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 		finalPassword string
 	)
 
+	var pgKws []string
+
 	rootCmd := &cobra.Command{
 		Use:     "pgxcli [DBNAME] [USERNAME]",
 		Short:   "Interactive PostgreSQL command-line client for querying and managing databases.",
@@ -63,6 +66,8 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 			}
 
 			cliCtx.Logger = logger
+
+			pgKws = parser.LoadPgKeywords()
 
 			return nil
 		},
@@ -190,11 +195,12 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 				return err
 			}
 
-			app, err := app.NewPgxCLI(cliCtx.config, cliCtx.Printer, cliCtx.Logger.Logger)
+			app, err := app.New(cliCtx.config, cliCtx.Printer, cliCtx.Logger.Logger)
 			if err != nil {
 				cliCtx.Logger.Error("Failed to initialize app", "error", err)
 				return err
 			}
+			app.SetAutocompleter(pgKws)
 			cliCtx.App = app
 			return nil
 		},

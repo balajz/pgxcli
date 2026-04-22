@@ -24,6 +24,7 @@ var chromaFormatter = detectTerminalColorProfile()
 type Reader interface {
 	Read(prefix string, ctx context.Context) (string, error)
 	History() []prompt.HistoryCommand
+	SetAutocompleter(keywords []string)
 }
 
 type PgxReader struct {
@@ -46,6 +47,14 @@ func (r *PgxReader) Read(prefix string, ctx context.Context) (string, error) {
 		return "", err
 	}
 	return text, nil
+}
+
+func (r *PgxReader) SetAutocompleter(keywords []string) {
+	suggestions := make([]prompt.Suggestion, len(keywords))
+	for i, kw := range keywords {
+		suggestions[i] = prompt.Suggestion{Value: kw}
+	}
+	r.prompt.SetAutoCompleterContextual(prompt.AutoCompleteSimple(suggestions, true))
 }
 
 func (r *PgxReader) History() []prompt.HistoryCommand {
