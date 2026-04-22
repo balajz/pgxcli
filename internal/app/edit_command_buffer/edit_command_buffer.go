@@ -26,17 +26,27 @@ func New(currentInput string) (*EditCommandBuffer, error) {
 	}, nil
 }
 
-func (e *EditCommandBuffer) Run() (string, error) {
+func (e *EditCommandBuffer) Run() (_ string, retErr error) {
 	tempFile, err := os.CreateTemp("", "pgxcli-*.sql")
 	if err != nil {
 		return "", err
 	}
-	defer os.Remove(tempFile.Name())
+	defer func() {
+		removeErr := os.Remove(tempFile.Name())
+		if removeErr != nil && !errors.Is(removeErr, os.ErrNotExist) {
+			retErr = errors.Join(retErr, removeErr)
+		}
+	}()
 
 	if _, wErr := tempFile.WriteString(e.currentInput); wErr != nil {
-		return "", err
+		if closeErr := tempFile.Close(); closeErr != nil {
+			return "", errors.Join(wErr, closeErr)
+		}
+		return "", wErr
 	}
-	tempFile.Close()
+	if closeErr := tempFile.Close(); closeErr != nil {
+		return "", closeErr
+	}
 
 	if editorErr := runEditor(e.editor, tempFile.Name()); editorErr != nil {
 		return "", editorErr
@@ -46,7 +56,11 @@ func (e *EditCommandBuffer) Run() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer rf.Close()
+	defer func() {
+		if closeErr := rf.Close(); closeErr != nil {
+			retErr = errors.Join(retErr, closeErr)
+		}
+	}()
 
 	data, err := io.ReadAll(rf)
 	if err != nil {

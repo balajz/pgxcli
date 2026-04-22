@@ -36,7 +36,9 @@ func New(config *config.Config, printer cliio.Printer, logger *slog.Logger) (*Pg
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize prompt reader: %w", err)
 	}
-	applyReaderOptions(reader, config, entries)
+	if err := applyReaderOptions(reader, config, entries); err != nil {
+		return nil, fmt.Errorf("failed to apply reader options: %w", err)
+	}
 
 	return &PgxCLI{
 		config: config, logger: logger, prompt: reader, Printer: printer, History: history,
@@ -131,8 +133,7 @@ func (p *PgxCLI) SetAutocompleter(keywords []string) {
 }
 
 func (p *PgxCLI) Close() error {
-	p.History.saveHistory(p.prompt.History())
-	return nil
+	return p.History.saveHistory(p.prompt.History())
 }
 
 func (p *PgxCLI) handleSpecialCommand(ctx context.Context, metaResult pgxspecial.SpecialCommandResult, client *database.Client) (string, bool, error) {
