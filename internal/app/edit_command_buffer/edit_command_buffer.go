@@ -1,3 +1,10 @@
+//revive:disable Unitl this is implemented into main application
+
+// Package editcommandbuffer provides functionality to edit a command buffer
+// using the user's preferred text editor.
+//
+// NOTE: this is not implemented into main application yet,
+// but can be used in the future to allow users to edit long commands in their editor of choice.
 package editcommandbuffer
 
 import (
@@ -7,7 +14,7 @@ import (
 	"os/exec"
 )
 
-var ErrEditorNotFound = errors.New("Editor not found, make sure envirnoment variable is applied for $VISUAL or $EDITOR")
+var ErrEditorNotFound = errors.New("editor not found, make sure environment variable is applied for $VISUAL or $EDITOR")
 
 type EditCommandBuffer struct {
 	currentInput string
