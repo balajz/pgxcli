@@ -12,12 +12,12 @@ type MockConn struct {
 	mock.Mock
 }
 
-func (mc *MockConn) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
+func (mc *MockConn) Query(ctx context.Context, sql string, _ ...any) (pgx.Rows, error) {
 	argsMocks := mc.Called(ctx, sql)
 	return argsMocks.Get(0).(pgx.Rows), argsMocks.Error(1)
 }
 
-func (mc *MockConn) Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error) {
+func (mc *MockConn) Exec(ctx context.Context, sql string, _ ...any) (pgconn.CommandTag, error) {
 	argsMocks := mc.Called(ctx, sql)
 	return argsMocks.Get(0).(pgconn.CommandTag), argsMocks.Error(1)
 }
@@ -27,9 +27,9 @@ func (mc *MockConn) Ping(ctx context.Context) error {
 	return argMocks.Error(0)
 }
 
-func (mc *MockConn) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row { return nil }
-func (mc *MockConn) Close(ctx context.Context) error                               { return nil }
-func (mc *MockConn) Config() *pgx.ConnConfig                                       { return nil }
+func (mc *MockConn) QueryRow(_ context.Context, _ string, _ ...any) pgx.Row { return nil }
+func (mc *MockConn) Close(_ context.Context) error                          { return nil }
+func (mc *MockConn) Config() *pgx.ConnConfig                                { return nil }
 
 type MockRows struct {
 	mock.Mock

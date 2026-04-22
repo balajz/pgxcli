@@ -1,3 +1,5 @@
+// Package cliio provides utilities for printing output to the terminal
+// including support for pagers and colored output.
 package cliio
 
 import (
@@ -23,14 +25,15 @@ var (
 )
 
 const (
-	PagerModeAuto   = "auto"
-	PagerModeAlways = "always"
-	PagerModeNever  = "never"
+	pagerModeAuto   = "auto"
+	pagerModeAlways = "always"
+	pagerModeNever  = "never"
 
 	defaultTerminalHeight = 24
 	autoPagerMinBytes     = 4096
 )
 
+// Printer defines terminal output behavior for regular, error, timed, and pager output.
 type Printer interface {
 	SetOut(out io.Writer)
 	SetErrOut(errOut io.Writer)
@@ -41,7 +44,8 @@ type Printer interface {
 	PrintViaPager(str string)
 }
 
-type PgxPrinter struct {
+// pgxPrinter is the default Printer implementation used by the CLI.
+type pgxPrinter struct {
 	out    io.Writer
 	errOut io.Writer
 
@@ -54,11 +58,12 @@ type PgxPrinter struct {
 	pagerSupported bool
 }
 
-func NewPgxPrinter(out io.Writer, errOut io.Writer) *PgxPrinter {
-	p := &PgxPrinter{
+// NewPgxPrinter creates a printer with pager auto-detection.
+func NewPgxPrinter(out io.Writer, errOut io.Writer) Printer {
+	p := &pgxPrinter{
 		out:            out,
 		errOut:         errOut,
-		pagerMode:      PagerModeAuto,
+		pagerMode:      pagerModeAuto,
 		isTerminal:     term.IsTerminal(os.Stdin.Fd()) && term.IsTerminal(os.Stdout.Fd()),
 		terminalHeight: detectTerminalHeight(os.Stdout.Fd()),
 		pagerPath:      "",
@@ -75,22 +80,25 @@ func NewPgxPrinter(out io.Writer, errOut io.Writer) *PgxPrinter {
 	return p
 }
 
-func (p *PgxPrinter) SetOut(out io.Writer) {
+// SetOut updates the destination for regular output.
+func (p *pgxPrinter) SetOut(out io.Writer) {
 	p.out = out
 }
 
-func (p *PgxPrinter) SetErrOut(errOut io.Writer) {
+// SetErrOut updates the destination for error output.
+func (p *pgxPrinter) SetErrOut(errOut io.Writer) {
 	p.errOut = errOut
 }
 
-func (p *PgxPrinter) SetPagerMode(mode string) error {
+// SetPagerMode configures pager behavior ("auto", "always", or "never").
+func (p *pgxPrinter) SetPagerMode(mode string) error {
 	normalized := strings.ToLower(strings.TrimSpace(mode))
 	if normalized == "" {
-		normalized = PagerModeAuto
+		normalized = pagerModeAuto
 	}
 
 	switch normalized {
-	case PagerModeAuto, PagerModeAlways, PagerModeNever:
+	case pagerModeAuto, pagerModeAlways, pagerModeNever:
 		p.pagerMode = normalized
 		return nil
 	default:
@@ -98,19 +106,23 @@ func (p *PgxPrinter) SetPagerMode(mode string) error {
 	}
 }
 
-func (p *PgxPrinter) Print(str string) {
+// Print writes regular output to the configured output stream.
+func (p *pgxPrinter) Print(str string) {
 	printInfo(p.out, str)
 }
 
-func (p *PgxPrinter) PrintError(err error) {
+// PrintError writes an error message to the configured error stream.
+func (p *pgxPrinter) PrintError(err error) {
 	printErr(p.errOut, "%v\n", err)
 }
 
-func (p *PgxPrinter) PrintTime(time time.Duration) {
+// PrintTime prints execution duration in seconds.
+func (p *pgxPrinter) PrintTime(time time.Duration) {
 	printTime(p.out, "Time: %.3fs\n", time.Seconds())
 }
 
-func (p *PgxPrinter) PrintViaPager(str string) {
+// PrintViaPager writes output either directly or through the configured pager.
+func (p *pgxPrinter) PrintViaPager(str string) {
 	output := ensureTrailingNewline(str)
 
 	if !p.shouldUsePager(str) {
@@ -129,16 +141,11 @@ func (p *PgxPrinter) PrintViaPager(str string) {
 	}
 }
 
-func EchoViaPager(writeFn func(io.Writer) error) error {
-	p := NewPgxPrinter(os.Stdout, os.Stderr)
-	return p.echoViaPager(writeFn)
-}
-
-func (p *PgxPrinter) shouldUsePager(str string) bool {
+func (p *pgxPrinter) shouldUsePager(str string) bool {
 	switch p.pagerMode {
-	case PagerModeNever:
+	case pagerModeNever:
 		return false
-	case PagerModeAlways:
+	case pagerModeAlways:
 		return p.isTerminal && p.pagerSupported
 	default:
 		if !p.isTerminal || !p.pagerSupported {
@@ -148,7 +155,7 @@ func (p *PgxPrinter) shouldUsePager(str string) bool {
 	}
 }
 
-func (p *PgxPrinter) autoPagerLineThreshold() int {
+func (p *pgxPrinter) autoPagerLineThreshold() int {
 	if p.terminalHeight <= 2 {
 		return 1
 	}
@@ -173,7 +180,7 @@ func ensureTrailingNewline(str string) string {
 	return str + "\n"
 }
 
-func (p *PgxPrinter) echoViaPager(writeFn func(io.Writer) error) error {
+func (p *pgxPrinter) echoViaPager(writeFn func(io.Writer) error) error {
 	if !p.isTerminal || !p.pagerSupported {
 		return writeFn(p.out)
 	}
@@ -189,7 +196,7 @@ func (p *PgxPrinter) echoViaPager(writeFn func(io.Writer) error) error {
 	return writeFn(p.out)
 }
 
-func (p *PgxPrinter) tryPipePager(writeFn func(io.Writer) error) bool {
+func (p *pgxPrinter) tryPipePager(writeFn func(io.Writer) error) bool {
 	cmd := exec.Command(p.pagerPath, p.pagerArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -209,7 +216,7 @@ func (p *PgxPrinter) tryPipePager(writeFn func(io.Writer) error) bool {
 	return writeErr == nil && waiterr == nil
 }
 
-func (p *PgxPrinter) tryTempfilePager(writerFn func(io.Writer) error) bool {
+func (p *pgxPrinter) tryTempfilePager(writerFn func(io.Writer) error) bool {
 	tmp, err := os.CreateTemp("", "pager-*")
 	if err != nil {
 		return false

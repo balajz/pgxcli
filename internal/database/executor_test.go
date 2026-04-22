@@ -28,7 +28,7 @@ func TestExecutor_query(t *testing.T) {
 	conn := new(MockConn)
 	conn.On("Query", ctx, "select * from users").Return(rows, nil)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -64,7 +64,7 @@ func TestExecutor_query_Error(t *testing.T) {
 	conn := new(MockConn)
 	conn.On("Query", ctx, "select * from users").Return(&MockRows{}, assert.AnError)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -91,7 +91,7 @@ func TestExecutor_query_Empty(t *testing.T) {
 	conn := new(MockConn)
 	conn.On("Query", ctx, "select * from users").Return(rows, nil)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -112,7 +112,7 @@ func TestExecutor_query_RelationNotFound(t *testing.T) {
 		Code: "42P01",
 	})
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -131,7 +131,7 @@ func TestExecutor_Execute(t *testing.T) {
 
 	conn.On("Exec", ctx, "delete from users where id = 1").Return(tag, nil)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -151,7 +151,7 @@ func TestExecutor_Execute_Insert(t *testing.T) {
 
 	conn.On("Exec", ctx, "insert into users (name) values ('name1')").Return(tag, nil)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -169,7 +169,7 @@ func TestExecutor_Execute_Error(t *testing.T) {
 	conn := new(MockConn)
 	conn.On("Exec", ctx, "delete from users where id = 1").Return(pgconn.NewCommandTag(""), assert.AnError)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -189,7 +189,7 @@ func TestExecutor_Execute_RelationNotFound(t *testing.T) {
 	}
 	conn.On("Exec", ctx, "delete from users where id = 1").Return(pgconn.NewCommandTag(""), relationNotFoundErr)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
@@ -207,12 +207,12 @@ func TestExecutor_ping(t *testing.T) {
 	conn := new(MockConn)
 	conn.On("Ping", ctx).Return(nil)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
 
-	err := executor.Ping(ctx)
+	err := executor.ping(ctx)
 	assert.NoError(t, err)
 	conn.AssertExpectations(t)
 }
@@ -221,11 +221,11 @@ func TestExecutor_ping_Error(t *testing.T) {
 	ctx := context.Background()
 
 	// no connection setup for ping to simulate database not connected error
-	executor := &Executor{
+	executor := &executor{
 		Logger: slog.Default(),
 	}
 
-	err := executor.Ping(ctx)
+	err := executor.ping(ctx)
 	assert.Error(t, err)
 	assert.ErrorContains(t, err, "database not connected")
 }
@@ -233,10 +233,10 @@ func TestExecutor_ping_Error(t *testing.T) {
 func TestExecutor_IsConnected(t *testing.T) {
 	conn := new(MockConn)
 
-	executor := &Executor{
+	executor := &executor{
 		Conn:   conn,
 		Logger: slog.Default(),
 	}
 
-	assert.True(t, executor.IsConnected())
+	assert.True(t, executor.isConnected())
 }

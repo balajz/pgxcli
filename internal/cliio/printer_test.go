@@ -49,16 +49,16 @@ func Test_waitIgnoringInterrupt_ReturnOtherError(t *testing.T) {
 }
 
 func TestSetPagerMode(t *testing.T) {
-	p := &PgxPrinter{}
+	p := &pgxPrinter{}
 
 	assert.NoError(t, p.SetPagerMode("AUTO"))
-	assert.Equal(t, PagerModeAuto, p.pagerMode)
+	assert.Equal(t, pagerModeAuto, p.pagerMode)
 
 	assert.NoError(t, p.SetPagerMode("always"))
-	assert.Equal(t, PagerModeAlways, p.pagerMode)
+	assert.Equal(t, pagerModeAlways, p.pagerMode)
 
 	assert.NoError(t, p.SetPagerMode("never"))
-	assert.Equal(t, PagerModeNever, p.pagerMode)
+	assert.Equal(t, pagerModeNever, p.pagerMode)
 
 	err := p.SetPagerMode("invalid")
 	assert.Error(t, err)
@@ -66,19 +66,19 @@ func TestSetPagerMode(t *testing.T) {
 }
 
 func TestShouldUsePager(t *testing.T) {
-	basePrinter := &PgxPrinter{
+	basePrinter := &pgxPrinter{
 		isTerminal:     true,
 		pagerSupported: true,
 		terminalHeight: 10,
 	}
 
-	basePrinter.pagerMode = PagerModeNever
+	basePrinter.pagerMode = pagerModeNever
 	assert.False(t, basePrinter.shouldUsePager(strings.Repeat("a", 10000)))
 
-	basePrinter.pagerMode = PagerModeAlways
+	basePrinter.pagerMode = pagerModeAlways
 	assert.True(t, basePrinter.shouldUsePager("small output"))
 
-	basePrinter.pagerMode = PagerModeAuto
+	basePrinter.pagerMode = pagerModeAuto
 	assert.False(t, basePrinter.shouldUsePager("small output"))
 	assert.True(t, basePrinter.shouldUsePager(strings.Repeat("a", autoPagerMinBytes)))
 	assert.True(t, basePrinter.shouldUsePager(strings.Repeat("line\n", 10)))
@@ -100,10 +100,10 @@ func TestEnsureTrailingNewline(t *testing.T) {
 
 func TestPrintViaPager_AppendsNewlineWhenNotPresent(t *testing.T) {
 	out := &bytes.Buffer{}
-	p := &PgxPrinter{
+	p := &pgxPrinter{
 		out:       out,
 		errOut:    io.Discard,
-		pagerMode: PagerModeNever,
+		pagerMode: pagerModeNever,
 	}
 
 	p.PrintViaPager("SELECT 9")

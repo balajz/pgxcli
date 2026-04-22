@@ -1,3 +1,4 @@
+// Package logger provides structured logging helpers for pgxcli.
 package logger
 
 import (

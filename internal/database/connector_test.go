@@ -46,7 +46,7 @@ func TestPGConnector_UpdatePassword_ConnString(t *testing.T) {
 			assert.NoError(t, err)
 			c.UpdatePassword(tt.newPassword)
 
-			assert.Equal(t, tt.newPassword, c.cfg.Password)
+			assert.Equal(t, tt.newPassword, c.Password())
 		})
 	}
 }
@@ -86,7 +86,7 @@ func TestPGConnector_UpdatePassword_Fields(t *testing.T) {
 			assert.NoError(t, err)
 			c.UpdatePassword(tt.newPassword)
 
-			assert.Equal(t, tt.newPassword, c.cfg.Password)
+			assert.Equal(t, tt.newPassword, c.Password())
 		})
 	}
 }

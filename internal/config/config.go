@@ -1,3 +1,8 @@
+// Package config provides utilities
+// for loading and managing configuration settings for the application.
+//
+// Configuration is loaded from an embedded default configuration file.
+// merged with a user configuration file located in the user's config directory.
 package config
 
 import (
@@ -10,13 +15,13 @@ import (
 )
 
 const (
-	// default stores the default value
+	// Default indicates that a path-based option should use its default location.
 	Default  = "default"
 	filename = "config.toml"
 	appName  = "pgxcli"
 )
 
-// config represents the high level configuration
+// Config represents the top-level application configuration.
 type Config struct {
 	Main main `mapstructure:"main" toml:"main"`
 }
@@ -68,6 +73,7 @@ func Load() (*Config, error) {
 	return &cfg, nil
 }
 
+// GetDefaultConfig returns the default configuration embedded in the binary.
 func GetDefaultConfig() (*Config, error) {
 	defaultV := viper.New()
 	defaultV.SetConfigType("toml")
@@ -82,7 +88,7 @@ func GetDefaultConfig() (*Config, error) {
 	return &cfg, nil
 }
 
-// returns the configuration file path or error, example: ~/.config/pgxcli/config.toml
+// UserConfigPath returns the user config path (for example: ~/.config/pgxcli/config.toml).
 func UserConfigPath() (string, error) {
 	userdir, err := os.UserConfigDir()
 	if err != nil {

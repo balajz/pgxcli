@@ -1,3 +1,7 @@
+// Package app is the application layer.
+//
+// It orchestrates the repl loop, command routing, result handling and history management.
+// custom commands and edit command buffer are also handled here.
 package app
 
 import (
@@ -17,12 +21,21 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
+// Application defines the interface for the main application logic.
 type Application interface {
+	// Start starts the main repl loop, reading input, executing commands and printing results until the user exits.
 	Start(ctx context.Context, client *database.Client)
+
+	// SetAutocompleter sets the autocompleter keywords for the prompt.
+	SetAutocompleter(keywords []string)
+
+	// Close performs saving history before exiting.
 	Close() error
 }
 
-type PgxCLI struct {
+// pgxCLI is the main implementation of the Application interface.
+// It holds the prompt reader, printer, history manager, configuration and logger.
+type pgxCLI struct {
 	prompt  Reader
 	Printer cliio.Printer
 	History *history
@@ -30,9 +43,11 @@ type PgxCLI struct {
 	logger  *slog.Logger
 }
 
-func New(config *config.Config, printer cliio.Printer, logger *slog.Logger) (*PgxCLI, error) {
+// New initializes the Application
+// based on configuration, it sets up the history manager, and prompt reader.
+func New(config *config.Config, printer cliio.Printer, logger *slog.Logger) (Application, error) {
 	history, entries := newHistory(config.Main.HistoryFile, logger)
-	reader, err := NewPgxReader()
+	reader, err := newReader()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize prompt reader: %w", err)
 	}
@@ -40,15 +55,15 @@ func New(config *config.Config, printer cliio.Printer, logger *slog.Logger) (*Pg
 		return nil, fmt.Errorf("failed to apply reader options: %w", err)
 	}
 
-	return &PgxCLI{
+	return &pgxCLI{
 		config: config, logger: logger, prompt: reader, Printer: printer, History: history,
 	}, nil
 }
 
-func (p *PgxCLI) Start(ctx context.Context, client *database.Client) {
+func (p *pgxCLI) Start(ctx context.Context, client *database.Client) {
 	for {
 		suffixStr := client.ParsePrompt(p.config.Main.Prompt)
-		rawInput, err := p.prompt.Read(suffixStr, ctx)
+		rawInput, err := p.prompt.Read(ctx, suffixStr)
 		if err != nil {
 			p.logger.Error("error reading input", "error", err)
 			p.Printer.PrintError(err)
@@ -128,15 +143,15 @@ func (p *PgxCLI) Start(ctx context.Context, client *database.Client) {
 	}
 }
 
-func (p *PgxCLI) SetAutocompleter(keywords []string) {
+func (p *pgxCLI) SetAutocompleter(keywords []string) {
 	p.prompt.SetAutocompleter(keywords)
 }
 
-func (p *PgxCLI) Close() error {
+func (p *pgxCLI) Close() error {
 	return p.History.saveHistory(p.prompt.History())
 }
 
-func (p *PgxCLI) handleSpecialCommand(ctx context.Context, metaResult pgxspecial.SpecialCommandResult, client *database.Client) (string, bool, error) {
+func (p *pgxCLI) handleSpecialCommand(ctx context.Context, metaResult pgxspecial.SpecialCommandResult, client *database.Client) (string, bool, error) {
 	switch metaResult.ResultKind() {
 
 	case database.Exit:
@@ -178,33 +193,33 @@ func (p *PgxCLI) handleSpecialCommand(ctx context.Context, metaResult pgxspecial
 		return info, false, nil
 
 	case pgxspecial.ResultKindRows:
-		table, err := render.RenderRowsResult(metaResult)
+		table, err := render.RowsResult(metaResult)
 		if err != nil {
 			return "", false, err
 		}
 		return table.Render(), false, nil
 
 	case pgxspecial.ResultKindDescribeTable:
-		tables, err := render.RenderDescribeTableResult(metaResult)
+		tables, err := render.DescribeTableResult(metaResult)
 		if err != nil {
 			p.logger.Error("error rendering describe table result", "error", err)
 			return "", false, err
 		}
-		return render.RenderTables(tables, table.StyleBold), false, nil
+		return render.Tables(tables, table.StyleBold), false, nil
 
 	case pgxspecial.ResultKindExtensionVerbose:
-		tables, err := render.RenderExtensionVerboseResult(metaResult)
+		tables, err := render.ExtensionVerboseResult(metaResult)
 		if err != nil {
 			return "", false, err
 		}
-		return render.RenderTables(tables, table.StyleBold), false, nil
+		return render.Tables(tables, table.StyleBold), false, nil
 
 	default:
 		return "", false, nil
 	}
 }
 
-func (p *PgxCLI) handleQueryResult(result database.Result) error {
+func (p *pgxCLI) handleQueryResult(result database.Result) error {
 	switch res := result.(type) {
 	case *database.QueryResult:
 		tw, err := res.Render()

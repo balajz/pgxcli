@@ -22,6 +22,7 @@ var (
 	osUser  = osUsername()
 )
 
+// NewRootCmd builds the root cobra command and wires the CLI lifecycle hooks.
 func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 	var (
 		debugFlag           debugFlag
@@ -42,7 +43,7 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 		Version: version,
 		Args:    cobra.MaximumNArgs(2), // Database name and username are optional example: pgxcli mydb myuser
 
-		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
 			keywords, err := loadRuntimeDependencies(cliCtx, bool(debugFlag))
 			if err != nil {
 				return err
@@ -82,7 +83,7 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 			return nil
 		},
 
-		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
 			if cliCtx.Logger != nil {
 				if err := cliCtx.Logger.Close(); err != nil {
 					return err

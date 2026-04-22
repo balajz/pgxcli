@@ -10,6 +10,7 @@ import (
 	"github.com/muesli/termenv"
 )
 
+// Prompt rendering defaults for the interactive reader.
 const (
 	DefaultPrompt = `\u@\h:\d> `
 	MaxLenPrompt  = 30
@@ -21,26 +22,27 @@ var builtinsCommand = map[string]func(){
 
 var chromaFormatter = detectTerminalColorProfile()
 
+// Reader abstracts user input, history, and completion behavior for the REPL.
 type Reader interface {
-	Read(prefix string, ctx context.Context) (string, error)
+	Read(ctx context.Context, prefix string) (string, error)
 	History() []prompt.HistoryCommand
 	SetAutocompleter(keywords []string)
 }
 
-type PgxReader struct {
+type pgxReader struct {
 	prompt prompt.Prompter
 }
 
-func NewPgxReader() (*PgxReader, error) {
+func newReader() (*pgxReader, error) {
 	p, err := prompt.New()
 	if err != nil {
 		return nil, err
 	}
 
-	return &PgxReader{prompt: p}, nil
+	return &pgxReader{prompt: p}, nil
 }
 
-func (r *PgxReader) Read(prefix string, ctx context.Context) (string, error) {
+func (r *pgxReader) Read(ctx context.Context, prefix string) (string, error) {
 	r.prompt.SetPrefix(prefix)
 	text, err := r.prompt.Prompt(ctx)
 	if err != nil && !errors.Is(err, prompt.ErrAborted) {
@@ -49,7 +51,8 @@ func (r *PgxReader) Read(prefix string, ctx context.Context) (string, error) {
 	return text, nil
 }
 
-func (r *PgxReader) SetAutocompleter(keywords []string) {
+// SetAutocompleter configures SQL keyword suggestions for interactive input.
+func (r *pgxReader) SetAutocompleter(keywords []string) {
 	suggestions := make([]prompt.Suggestion, len(keywords))
 	for i, kw := range keywords {
 		suggestions[i] = prompt.Suggestion{Value: kw}
@@ -57,7 +60,8 @@ func (r *PgxReader) SetAutocompleter(keywords []string) {
 	r.prompt.SetAutoCompleterContextual(prompt.AutoCompleteSimple(suggestions, true))
 }
 
-func (r *PgxReader) History() []prompt.HistoryCommand {
+// History returns the current prompt history entries.
+func (r *pgxReader) History() []prompt.HistoryCommand {
 	return r.prompt.History()
 }
 
@@ -65,7 +69,7 @@ func getSyntaxHighlighting(style string) (prompt.SyntaxHighlighter, error) {
 	return prompt.SyntaxHighlighterChroma("PostgreSQL SQL dialect", chromaFormatter, style)
 }
 
-func applyReaderOptions(r *PgxReader, config *config.Config, histories []prompt.HistoryCommand) error {
+func applyReaderOptions(r *pgxReader, config *config.Config, histories []prompt.HistoryCommand) error {
 	highlighter, err := getSyntaxHighlighting(config.Main.Style)
 	if err != nil {
 		return err

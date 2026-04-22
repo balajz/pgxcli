@@ -119,18 +119,13 @@ func TestHistorySaveHistory_CreatesMissingParentDirectoryAndFile(t *testing.T) {
 	assert.NotEmpty(t, strings.TrimSpace(string(data)))
 }
 
-func TestHistorySaveHistory_DisablesHistoryOnInvalidPath(t *testing.T) {
+func TestHistorySaveHistory_FailsOnInvalidPath(t *testing.T) {
 	h := history{path: "\x00", loadCount: 0, logger: testLogger()}
 	entries := []prompt.HistoryCommand{{Command: "select 1"}}
 
-	h.saveHistory(entries)
+	err := h.saveHistory(entries)
 
-	assert.True(t, h.disabled)
-
-	// Second call should no-op because history is disabled.
-	assert.NotPanics(t, func() {
-		h.saveHistory(entries)
-	})
+	assert.Error(t, err)
 }
 
 func TestLoadHistory(t *testing.T) {

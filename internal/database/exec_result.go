@@ -1,12 +1,10 @@
 package database
 
 import (
-	"fmt"
 	"time"
 )
 
-// exec → returns status/affected rows (INSERT, UPDATE, CREATE, etc.)
-
+// ExecResult represents a non-row SQL command result (INSERT, UPDATE, DELETE, DDL).
 type ExecResult struct {
 	RowsAffected int64
 	Status       string
@@ -14,11 +12,3 @@ type ExecResult struct {
 }
 
 func (e *ExecResult) isResult() {}
-
-func (e *ExecResult) Render() string {
-	return fmt.Sprintf(
-		"%s\nTime: %s",
-		e.Status,
-		e.Duration.String(),
-	)
-}

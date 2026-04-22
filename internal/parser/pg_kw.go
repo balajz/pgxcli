@@ -8,6 +8,7 @@ import (
 //go:embed pg_kw.txt
 var pgKeywords string
 
+// LoadPgKeywords returns PostgreSQL keyword suggestions used by autocompletion.
 func LoadPgKeywords() []string {
 	return suggestionsFromFile(pgKeywords)
 }

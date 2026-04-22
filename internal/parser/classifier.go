@@ -1,3 +1,4 @@
+// Package parser provides SQL classification and statement splitting helpers.
 package parser
 
 import (
@@ -12,6 +13,7 @@ const (
 	commandTypeExecute = "EXECUTE"
 )
 
+// CommandType classifies SQL text as QUERY, EXECUTE, or INVALID.
 func CommandType(sql string) string {
 	trimmed := strings.TrimSpace(sql)
 	if trimmed == "" {

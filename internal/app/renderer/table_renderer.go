@@ -11,7 +11,8 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 
-func RenderRowsResult(result pgxspecial.SpecialCommandResult) (table.Writer, error) {
+// RowsResult renders row-based special command output into a pretty table.
+func RowsResult(result pgxspecial.SpecialCommandResult) (table.Writer, error) {
 	resultRows, ok := result.(pgxspecial.RowResult)
 	if !ok {
 		return nil, fmt.Errorf("invalid row result type")
@@ -20,7 +21,8 @@ func RenderRowsResult(result pgxspecial.SpecialCommandResult) (table.Writer, err
 	return renderRows(resultRows.Rows), nil
 }
 
-func RenderDescribeTableResult(result pgxspecial.SpecialCommandResult) ([]table.Writer, error) {
+// DescribeTableResult renders each describe-table section as a table writer.
+func DescribeTableResult(result pgxspecial.SpecialCommandResult) ([]table.Writer, error) {
 	describeTableResult, ok := result.(pgxspecial.DescribeTableListResult)
 	if !ok {
 		return nil, fmt.Errorf("invalid describe table result type")
@@ -34,7 +36,8 @@ func RenderDescribeTableResult(result pgxspecial.SpecialCommandResult) ([]table.
 	return writers, nil
 }
 
-func RenderExtensionVerboseResult(result pgxspecial.SpecialCommandResult) ([]table.Writer, error) {
+// ExtensionVerboseResult renders each verbose extension result as a table writer.
+func ExtensionVerboseResult(result pgxspecial.SpecialCommandResult) ([]table.Writer, error) {
 	extResult, ok := result.(pgxspecial.ExtensionVerboseListResult)
 	if !ok {
 		return nil, fmt.Errorf("invalid extension verbose result type")

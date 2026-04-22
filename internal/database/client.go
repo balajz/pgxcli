@@ -1,6 +1,4 @@
-// client is the top most layer of database connection management and query execution.
-// client provides a high level API for connecting to database, executing queries
-// and managing connection state.
+// Package database manages PostgreSQL connections, execution, and special commands.
 package database
 
 import (
@@ -13,15 +11,17 @@ import (
 	"github.com/balaji01-4d/pgxspecial"
 )
 
+// Client provides high-level connection management and SQL execution operations.
 type Client struct {
-	CurrentDB string
-	Executor  *Executor
+	currentDB string
+	executor  *executor
 
 	now time.Time
 
 	logger *slog.Logger
 }
 
+// New creates a database client with logger-backed connection lifecycle reporting.
 func New(logger *slog.Logger) *Client {
 	postgres := &Client{
 		now:    time.Now(),
@@ -30,34 +30,39 @@ func New(logger *slog.Logger) *Client {
 	return postgres
 }
 
+// Connect opens a database connection using the provided connector.
 func (c *Client) Connect(ctx context.Context, connector Connector) error {
-	exec, err := NewExecutor(ctx, connector, c.logger)
+	exec, err := newExecutor(ctx, connector, c.logger)
 	if err != nil {
 		return err
 	}
-	c.Executor = exec
-	c.CurrentDB = exec.Database
+	c.executor = exec
+	c.currentDB = exec.Database
 	c.logger.Info("Database connection established", "database", exec.Database, "user", exec.User)
 
 	return nil
 }
 
+// ExecuteSpecial executes a pgxspecial command (for example: \q, \c, \conninfo).
 func (c *Client) ExecuteSpecial(ctx context.Context,
 	command string,
 ) (pgxspecial.SpecialCommandResult, bool, error) {
-	result, okay, err := pgxspecial.ExecuteSpecialCommand(ctx, c.Executor.Conn, command)
+	result, okay, err := pgxspecial.ExecuteSpecialCommand(ctx, c.executor.Conn, command)
 	c.logger.Info("Executed special command", "command", command, "result", result, "okay", okay, "err", err)
 	return result, okay, err
 }
 
+// ExecuteQuery runs SQL through the underlying executor and returns typed results.
 func (c *Client) ExecuteQuery(ctx context.Context, query string) (Result, error) {
-	return c.Executor.Execute(ctx, query)
+	return c.executor.execute(ctx, query)
 }
 
+// IsConnected reports whether the client currently has an active connection.
 func (c *Client) IsConnected() bool {
-	return c.Executor != nil && c.Executor.IsConnected()
+	return c.executor != nil && c.executor.isConnected()
 }
 
+// ChangeDatabase reconnects to the same server with a different database name.
 func (c *Client) ChangeDatabase(ctx context.Context, dbName string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected to any database")
@@ -68,13 +73,13 @@ func (c *Client) ChangeDatabase(ctx context.Context, dbName string) error {
 		return fmt.Errorf("database name is required")
 	}
 
-	connConfig := c.Executor.Conn.Config().Copy()
+	connConfig := c.executor.Conn.Config().Copy()
 	connConfig.Database = dbName
 
-	connector := &PGConnector{cfg: connConfig}
-	oldExecutor := c.Executor
+	connector := &pgConnector{cfg: connConfig}
+	oldExecutor := c.executor
 
-	exec, err := NewExecutor(
+	exec, err := newExecutor(
 		ctx,
 		connector,
 		c.logger,
@@ -83,11 +88,11 @@ func (c *Client) ChangeDatabase(ctx context.Context, dbName string) error {
 		return err
 	}
 
-	c.Executor = exec
-	c.CurrentDB = exec.Database
+	c.executor = exec
+	c.currentDB = exec.Database
 
 	if oldExecutor != nil {
-		if err := oldExecutor.Close(ctx); err != nil {
+		if err := oldExecutor.close(ctx); err != nil {
 			c.logger.Error("Failed to close previous connection after database switch", "error", err)
 			return fmt.Errorf("database changed to %s but failed to close previous connection: %w", exec.Database, err)
 		}
@@ -98,31 +103,32 @@ func (c *Client) ChangeDatabase(ctx context.Context, dbName string) error {
 	return nil
 }
 
+// ParsePrompt resolves prompt placeholders using current connection metadata.
 func (c *Client) ParsePrompt(str string) string {
 	str = strings.ReplaceAll(str, "\\t", c.now.Format("02/06/2006 15:04:05"))
-	if c.Executor.User != "" {
-		str = strings.ReplaceAll(str, "\\u", c.Executor.User)
+	if c.executor.User != "" {
+		str = strings.ReplaceAll(str, "\\u", c.executor.User)
 	} else {
 		str = strings.ReplaceAll(str, "\\u", "(nil)")
 	}
 
-	if c.Executor.Host != "" {
-		str = strings.ReplaceAll(str, "\\H", c.Executor.Host)
+	if c.executor.Host != "" {
+		str = strings.ReplaceAll(str, "\\H", c.executor.Host)
 		str = strings.ReplaceAll(str, "\\h", func() string {
-			return strings.Split(c.Executor.Host, ".")[0]
+			return strings.Split(c.executor.Host, ".")[0]
 		}())
 	} else {
 		str = strings.ReplaceAll(str, "\\H", "(nil)")
 		str = strings.ReplaceAll(str, "\\h", "(nil)")
 	}
 
-	if c.CurrentDB != "" {
-		str = strings.ReplaceAll(str, "\\d", c.CurrentDB)
+	if c.currentDB != "" {
+		str = strings.ReplaceAll(str, "\\d", c.currentDB)
 	} else {
 		str = strings.ReplaceAll(str, "\\d", "(nil)")
 	}
-	if c.Executor.Port != 0 {
-		str = strings.ReplaceAll(str, "\\p", fmt.Sprintf("%d", c.Executor.Port))
+	if c.executor.Port != 0 {
+		str = strings.ReplaceAll(str, "\\p", fmt.Sprintf("%d", c.executor.Port))
 	} else {
 		str = strings.ReplaceAll(str, "\\p", "5432")
 	}
@@ -132,32 +138,38 @@ func (c *Client) ParsePrompt(str string) string {
 	return str
 }
 
+// GetUser returns the current connection user name.
 func (c *Client) GetUser() string {
-	return c.Executor.User
+	return c.executor.User
 }
 
+// GetDatabase returns the current database name.
 func (c *Client) GetDatabase() string {
-	return c.Executor.Database
+	return c.executor.Database
 }
 
+// GetPort returns the current connection port.
 func (c *Client) GetPort() uint16 {
-	return c.Executor.Port
+	return c.executor.Port
 }
 
+// GetHost returns the current connection host.
 func (c *Client) GetHost() string {
-	return c.Executor.Host
+	return c.executor.Host
 }
 
+// Ping verifies connectivity to the current database.
 func (c *Client) Ping(ctx context.Context) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected to any database")
 	}
-	return c.Executor.Ping(ctx)
+	return c.executor.ping(ctx)
 }
 
+// Close closes the current database connection if one exists.
 func (c *Client) Close(ctx context.Context) error {
-	if c.Executor != nil {
-		return c.Executor.Close(ctx)
+	if c.executor != nil {
+		return c.executor.close(ctx)
 	}
 	return nil
 }

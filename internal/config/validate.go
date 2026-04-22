@@ -34,7 +34,7 @@ func validate(cfg Config) error {
 	onError := cfg.Main.OnError
 	if onError == "" {
 		errs = append(errs, errors.New("on_error action must not be empty"))
-	} else if !onError.IsValid() {
+	} else if !onError.isValid() {
 		errs = append(errs, errors.New("on_error action must be one of: STOP, RESUME"))
 	}
 

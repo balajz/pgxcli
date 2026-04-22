@@ -6,24 +6,29 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// Connector describes how the client obtains and updates a database connection.
 type Connector interface {
 	Connect(ctx context.Context) (*pgx.Conn, error)
 	UpdatePassword(password string)
+	Password() string
 }
 
-type PGConnector struct {
+// pgConnector holds pgx connection configuration and creates database connections.
+type pgConnector struct {
 	cfg *pgx.ConnConfig
 }
 
-func NewPGConnectorFromConnString(connString string) (*PGConnector, error) {
+// NewPGConnectorFromConnString builds a connector from a PostgreSQL connection string.
+func NewPGConnectorFromConnString(connString string) (Connector, error) {
 	cfg, err := pgx.ParseConfig(connString)
 	if err != nil {
 		return nil, err
 	}
-	return &PGConnector{cfg: cfg}, nil
+	return &pgConnector{cfg: cfg}, nil
 }
 
-func NewPGConnectorFromFields(host, database, user, password string, port uint16) (*PGConnector, error) {
+// NewPGConnectorFromFields builds a connector from individual connection fields.
+func NewPGConnectorFromFields(host, database, user, password string, port uint16) (Connector, error) {
 	cfg, err := pgx.ParseConfig("")
 	if err != nil {
 		return nil, err
@@ -41,14 +46,21 @@ func NewPGConnectorFromFields(host, database, user, password string, port uint16
 	if port != 0 {
 		cfg.Port = port
 	}
-	return &PGConnector{cfg: cfg}, nil
+	return &pgConnector{cfg: cfg}, nil
 }
 
-func (c *PGConnector) UpdatePassword(newPassword string) {
+// UpdatePassword updates the password on the underlying connection config.
+func (c *pgConnector) UpdatePassword(newPassword string) {
 	c.cfg.Password = newPassword
 }
 
-func (c *PGConnector) Connect(ctx context.Context) (*pgx.Conn, error) {
+// Password returns the password from the underlying connection config.
+func (c *pgConnector) Password() string {
+	return c.cfg.Password
+}
+
+// Connect opens a new pgx connection using the connector configuration.
+func (c *pgConnector) Connect(ctx context.Context) (*pgx.Conn, error) {
 	conn, err := pgx.ConnectConfig(ctx, c.cfg)
 	if err != nil {
 		return nil, err

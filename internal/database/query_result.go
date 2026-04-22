@@ -9,8 +9,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-// query → returns rows (SELECT, SHOW, etc.)
-
+// QueryResult represents a row-producing SQL execution result.
 type QueryResult struct {
 	rowStreamer
 }
@@ -71,10 +70,12 @@ func (r *rowStreamer) Duration() time.Duration {
 	return r.duration
 }
 
+// CommandTag returns the PostgreSQL command tag for the streamed rows.
 func (r *QueryResult) CommandTag() string {
 	return r.rows.CommandTag().String()
 }
 
+// Render fully materializes streamed rows into a pretty table writer.
 func (r *QueryResult) Render() (table.Writer, error) {
 	tw := table.NewWriter()
 

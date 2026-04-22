@@ -1,3 +1,4 @@
+// Package ui contains terminal UI flows used by the CLI.
 package ui
 
 import (
@@ -14,7 +15,7 @@ import (
 
 const maxWidth = 80
 
-type Styles struct {
+type styles struct {
 	Base,
 	HeaderText,
 	Status,
@@ -26,9 +27,9 @@ type Styles struct {
 	Red, Indigo, Green color.Color
 }
 
-func NewStyles(hasDarkBg bool) *Styles {
+func newStyles(hasDarkBg bool) *styles {
 	var (
-		s         = Styles{}
+		s         = styles{}
 		lightDark = lipgloss.LightDark(hasDarkBg)
 	)
 
@@ -58,8 +59,9 @@ func NewStyles(hasDarkBg bool) *Styles {
 	return &s
 }
 
-var ErrFormAborted = errors.New("connection form aborted")
+var errFormAborted = errors.New("connection form aborted")
 
+// ConnectionValues contains connection details collected from the interactive form.
 type ConnectionValues struct {
 	Database string
 	Username string
@@ -68,23 +70,23 @@ type ConnectionValues struct {
 	Password string
 }
 
-type Model struct {
-	styles    func(bool) *Styles
+type model struct {
+	styles    func(bool) *styles
 	form      *huh.Form
 	values    ConnectionValues
 	hasDarkBg bool
 	width     int
 }
 
-func NewModel(database, username, host, port string) *Model {
+func newModel(database, username, host, port string) *model {
 	port = strings.TrimSpace(port)
 	if port == "" || port == "0" {
 		port = "5432"
 	}
 
-	m := &Model{
+	m := &model{
 		width:  maxWidth,
-		styles: NewStyles,
+		styles: newStyles,
 		values: ConnectionValues{
 			Database: database,
 			Username: username,
@@ -132,24 +134,24 @@ func NewModel(database, username, host, port string) *Model {
 	return m
 }
 
-func (m *Model) Init() tea.Cmd {
+func (m *model) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-func min(x, y int) int {
+func minInt(x, y int) int {
 	if x > y {
 		return y
 	}
 	return x
 }
 
-func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	styles := m.styles(m.hasDarkBg)
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		m.hasDarkBg = msg.IsDark()
 	case tea.WindowSizeMsg:
-		m.width = min(msg.Width, maxWidth) - styles.Base.GetHorizontalFrameSize()
+		m.width = minInt(msg.Width, maxWidth) - styles.Base.GetHorizontalFrameSize()
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
@@ -176,7 +178,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m *Model) View() tea.View {
+func (m *model) View() tea.View {
 	s := m.styles(m.hasDarkBg)
 
 	switch m.form.State {
@@ -233,7 +235,7 @@ func (m *Model) View() tea.View {
 	}
 }
 
-func (m *Model) errorView() string {
+func (m *model) errorView() string {
 	var s strings.Builder
 	for _, err := range m.form.Errors() {
 		s.WriteString(err.Error())
@@ -241,7 +243,7 @@ func (m *Model) errorView() string {
 	return s.String()
 }
 
-func (m *Model) appBoundaryView(text string) string {
+func (m *model) appBoundaryView(text string) string {
 	s := m.styles(m.hasDarkBg)
 	return lipgloss.PlaceHorizontal(
 		m.width,
@@ -252,7 +254,7 @@ func (m *Model) appBoundaryView(text string) string {
 	)
 }
 
-func (m *Model) appErrorBoundaryView(text string) string {
+func (m *model) appErrorBoundaryView(text string) string {
 	s := m.styles(m.hasDarkBg)
 	return lipgloss.PlaceHorizontal(
 		m.width,
@@ -263,9 +265,9 @@ func (m *Model) appErrorBoundaryView(text string) string {
 	)
 }
 
-func (m *Model) Result() (ConnectionValues, error) {
+func (m *model) result() (ConnectionValues, error) {
 	if m.form.State != huh.StateCompleted {
-		return ConnectionValues{}, ErrFormAborted
+		return ConnectionValues{}, errFormAborted
 	}
 
 	port, err := strconv.Atoi(strings.TrimSpace(m.values.Port))
@@ -277,18 +279,19 @@ func (m *Model) Result() (ConnectionValues, error) {
 	return values, nil
 }
 
+// RunConnectionForm starts the interactive connection form and returns collected values.
 func RunConnectionForm(database, username, host, port string) (ConnectionValues, error) {
-	finalModel, err := tea.NewProgram(NewModel(database, username, host, port)).Run()
+	finalModel, err := tea.NewProgram(newModel(database, username, host, port)).Run()
 	if err != nil {
 		return ConnectionValues{}, err
 	}
 
-	m, ok := finalModel.(*Model)
+	m, ok := finalModel.(*model)
 	if !ok {
 		return ConnectionValues{}, fmt.Errorf("unexpected model type: %T", finalModel)
 	}
 
-	return m.Result()
+	return m.result()
 }
 
 func fallback(value string) string {

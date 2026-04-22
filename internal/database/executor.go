@@ -12,16 +12,12 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// Result marks values returned by SQL execution paths.
 type Result interface {
 	isResult()
 }
 
-type CommandTag interface {
-	RowsAffected() int64
-	String() string
-}
-
-type Conn interface {
+type conn interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
@@ -30,8 +26,7 @@ type Conn interface {
 	Close(ctx context.Context) error
 }
 
-// executor struct to execute queries
-type Executor struct {
+type executor struct {
 	Host     string
 	Port     uint16
 	Database string
@@ -39,12 +34,12 @@ type Executor struct {
 	User     string
 	Password string
 	URI      string
-	Conn     Conn
+	Conn     conn
 
 	Logger *slog.Logger
 }
 
-func NewExecutor(ctx context.Context, c Connector, logger *slog.Logger) (*Executor, error) {
+func newExecutor(ctx context.Context, c Connector, logger *slog.Logger) (*executor, error) {
 	conn, err := c.Connect(ctx)
 	if err != nil {
 		return nil, err
@@ -60,7 +55,7 @@ func NewExecutor(ctx context.Context, c Connector, logger *slog.Logger) (*Execut
 		return nil, err
 	}
 
-	return &Executor{
+	return &executor{
 		Host:     conn.Config().Host,
 		Port:     conn.Config().Port,
 		Database: conn.Config().Database,
@@ -73,7 +68,7 @@ func NewExecutor(ctx context.Context, c Connector, logger *slog.Logger) (*Execut
 }
 
 // For executing queries like SELECT, SHOW etc.
-func (e *Executor) query(ctx context.Context, sql string, args ...any) (*QueryResult, error) {
+func (e *executor) query(ctx context.Context, sql string, args ...any) (*QueryResult, error) {
 	e.Logger.Debug("Executing query", "sql", sql)
 	start := time.Now()
 	rows, err := e.Conn.Query(ctx, sql, args...)
@@ -98,7 +93,7 @@ func (e *Executor) query(ctx context.Context, sql string, args ...any) (*QueryRe
 }
 
 // For executing commands like INSERT, UPDATE, DELETE etc.
-func (e *Executor) exec(ctx context.Context, sql string, args ...any) (*ExecResult, error) {
+func (e *executor) exec(ctx context.Context, sql string, args ...any) (*ExecResult, error) {
 	e.Logger.Debug("Executing command", "sql", sql)
 	start := time.Now()
 	tag, err := e.Conn.Exec(ctx, sql, args...)
@@ -115,28 +110,28 @@ func (e *Executor) exec(ctx context.Context, sql string, args ...any) (*ExecResu
 	}, nil
 }
 
-// Execute method to determine whether to run query or exec based on SQL type
-func (e *Executor) Execute(ctx context.Context, sql string, args ...any) (Result, error) {
+// execute determines whether to run query or exec based on SQL type.
+func (e *executor) execute(ctx context.Context, sql string, args ...any) (Result, error) {
 	if parser.IsQuery(sql) {
 		return e.query(ctx, sql, args...)
 	}
 	return e.exec(ctx, sql, args...)
 }
 
-func (e *Executor) Close(ctx context.Context) error {
+func (e *executor) close(ctx context.Context) error {
 	if e.Conn != nil {
 		return e.Conn.Close(ctx)
 	}
 	return nil
 }
 
-func (e *Executor) Ping(ctx context.Context) error {
+func (e *executor) ping(ctx context.Context) error {
 	if e.Conn == nil {
 		return fmt.Errorf("database not connected")
 	}
 	return e.Conn.Ping(ctx)
 }
 
-func (e *Executor) IsConnected() bool {
+func (e *executor) isConnected() bool {
 	return e.Conn != nil
 }
