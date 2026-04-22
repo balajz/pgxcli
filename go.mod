@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/fatih/color v1.19.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/jedib0t/go-pretty/v6 v6.7.9
+	github.com/jedib0t/go-pretty/v6 v6.7.10
 	github.com/jedib0t/go-prompter v0.1.1-0.20260227172322-e85600bef9c9
 	github.com/muesli/termenv v0.16.0
 	github.com/pganalyze/pg_query_go/v6 v6.2.2
