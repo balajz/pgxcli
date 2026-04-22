@@ -104,8 +104,8 @@ github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/jedib0t/go-pretty/v6 v6.7.9 h1:frarzQWmkZd97syT81+TH8INKPpzoxQnk+Mk5EIHSrM=
 github.com/jedib0t/go-pretty/v6 v6.7.9/go.mod h1:YwC5CE4fJ1HFUDeivSV1r//AmANFHyqczZk+U6BDALU=
-github.com/jedib0t/go-prompter v0.1.0 h1:d90s+xWEp4+B52wI3NH5pO4zLG5ZMxoch7GPOxIlpHk=
-github.com/jedib0t/go-prompter v0.1.0/go.mod h1:r0rLW2jSPjaUdNsPyg+gYryZ5oaHOcow3OL9RFOT/bM=
+github.com/jedib0t/go-prompter v0.1.1-0.20260227172322-e85600bef9c9 h1:e+BsMawvjlbHkKVtrElEWFMhCsDOvxX2FSWDXbOnjYU=
+github.com/jedib0t/go-prompter v0.1.1-0.20260227172322-e85600bef9c9/go.mod h1:r0rLW2jSPjaUdNsPyg+gYryZ5oaHOcow3OL9RFOT/bM=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
