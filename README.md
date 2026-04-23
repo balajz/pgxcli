@@ -1,114 +1,232 @@
-# pgxcli
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<a id="readme-top"></a>
 
-pgxcli is a modern, interactive command-line client for PostgreSQL, written in Go. It aims to provide a rich user experience with features like autocompletion, syntax highlighting, and smart command history.
+<!-- PROJECT SHIELDS -->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
-> **NOTE:** `pgxcli` is currently in active development. The upcoming first release will feature basic syntax highlighting and word-based suggestions. Advanced features like context-aware autocompletion and further quality improvements are planned for future releases.
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/Balaji01-4D/pgxcli">
+    <strong>pgxcli</strong>
+  </a>
 
-## Roadmap
+  <h3 align="center">pgxcli</h3>
 
-- [x] Basic Syntax Highlighting
-- [x] Word-based Suggestions
-- [ ] Context-aware Autocompletion (Planned)
-- [ ] Quality Improvements
+  <p align="center">
+    Interactive PostgreSQL command-line client written in Go.
+    <br />
+    <a href="https://github.com/Balaji01-4D/pgxcli/tree/main/docs"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="#usage">View Demo</a>
+    &middot;
+    <a href="https://github.com/Balaji01-4D/pgxcli/issues/new?labels=bug">Report Bug</a>
+    &middot;
+    <a href="https://github.com/Balaji01-4D/pgxcli/issues/new?labels=enhancement">Request Feature</a>
+  </p>
+</div>
 
-## Features
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#development">Development</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#configuration">Configuration</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
 
-*   **Interactive REPL**: A powerful Read-Eval-Print Loop with a customizable prompt.
-*   **Autocompletion**: Currently supports word-based suggestions. Context-aware suggestions are planned for future releases.
-*   **Syntax Highlighting**: Colorful output for SQL queries and results.
-*   **Special Commands**: Support for standard PostgreSQL backslash commands (e.g., `\d`, `\l`).
-*   **Smart History**: Persists your command history.
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
-## Installation
+`pgxcli` is an interactive PostgreSQL command-line client built in Go. It focuses on a fast, friendly REPL experience with syntax highlighting, keyword autocompletion, history, and support for PostgreSQL backslash commands.
 
-### From Source
+Key highlights:
+* Interactive REPL with customizable prompt and style.
+* SQL syntax highlighting while typing.
+* SQL keyword autocompletion.
+* Persistent command history.
+* PostgreSQL special backslash commands (for example: `\d`, `\l`, `\dt`, `\q`).
+* Configurable error behavior for multi-statement execution (`STOP` / `RESUME`).
 
-Ensure you have Go installed (version 1.21+ recommended).
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-```bash
-git clone https://github.com/balaji01-4d/pgxcli.git
-cd pgxcli
+### Built With
+
+* [Go][go-url]
+* [pgx][pgx-url]
+* [Cobra][cobra-url]
+* [Viper][viper-url]
+* [go-pretty][go-pretty-url]
+* [go-prompter][go-prompter-url]
+* [pg_query_go][pg-query-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- GETTING STARTED -->
+## Getting Started
+
+### Prerequisites
+
+* Go `1.25.8` or newer
+* A PostgreSQL server to connect to
+* `make` (recommended for build/test targets)
+
+### Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/Balaji01-4D/pgxcli.git
+   cd pgxcli
+   ```
+2. Build the binary
+   ```sh
+   make build
+   ```
+3. Run the CLI
+   ```sh
+   ./bin/app --help
+   ```
+
+### Development
+
+```sh
 make build
+make test
+make lint
+make precommit
 ```
 
-The binary will be created in `bin/app` (or just `pgxcli` if you adjust the build).
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- USAGE EXAMPLES -->
 ## Usage
 
-Basic usage to connect to a database:
-
-```bash
-./bin/app [DBNAME] [USERNAME] [flags]
-```
-
-### Examples
-
-Connect to a database named `mydb` as user `myuser`:
-
-```bash
+```sh
+# positional arguments
 ./bin/app mydb myuser
-```
 
-Connect using flags:
-
-```bash
+# flags
 ./bin/app --host localhost --port 5432 --user postgres --dbname postgres
-```
 
-Connect using a connection URI:
-
-```bash
+# connection URI
 ./bin/app postgres://user:password@localhost:5432/dbname
+
+# interactive connection form
+./bin/app -i
 ```
 
-### Flags
+For full flag documentation, see the [CLI reference][cli-reference-url].
 
-| Flag | Shorthand | Description |
-| :--- | :--- | :--- |
-| `--host` | `-h` | Host address of the Postgres database (default "localhost") |
-| `--port` | `-p` | Port number (default 5432) |
-| `--user` | `-u`, `-U` | Username to connect as |
-| `--dbname` | `-d` | Database name to connect to |
-| `--password` | `-W` | Force password prompt |
-| `--no-password` | `-w` | Never prompt for password |
-| `--debug` | | Enable debug mode for verbose logging |
-| `--help` | | Show help message |
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Project Structure
+<!-- CONFIGURATION -->
+## Configuration
 
-The project follows a standard Go layout:
+On first run, a config file is created at:
 
-```text
-pgxcli/
-├── cmd/
-│   └── pgxcli/          # Application entry point
-├── internal/
-│   ├── cli/             # Cobra command definitions and CLI logic
-│   ├── completer/       # SQL autocompletion engine and metadata handling
-│   ├── config/          # Configuration management
-│   ├── database/        # PostgreSQL connection and execution wrapper (using pgx)
-│   ├── logger/          # Logging utilities
-│   ├── parser/          # SQL parsing (using pg_query_go) for classification
-│   └── repl/            # The Read-Eval-Print-Loop core
-│       ├── commands/    # Built-in REPL commands (e.g., clear)
-│       └── renderer/    # Output rendering and formatting
-├── bin/                 # Compiled binaries
-├── go.mod               # Go module definition
-├── Makefile             # Build automation
-└── README.md            # Project documentation
-```
+* `~/.config/pgxcli/config.toml` (or the OS-equivalent user config directory)
 
-## Internal Architecture
+Common settings include:
 
-*   **REPL**: Built using `elk-language/go-prompt`, it handles user input, history, and rendering.
-*   **Database**: Uses `jackc/pgx` for high-performance PostgreSQL interaction. The `internal/database` package abstracts connection pooling and query execution.
-*   **Parser**: Integrates `pganalyze/pg_query_go` to analyze SQL statements, determining if they are queries or execution commands to handle transactions and results correctly.
-*   **Completer**: Maintains metadata about the database schema (tables, columns) to provide intelligent suggestions.
+* `main.prompt`
+* `main.style`
+* `main.history_file`
+* `main.log_file`
+* `main.pager` (`auto`, `always`, `never`)
+* `main.on_error` (`STOP`, `RESUME`)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- ROADMAP -->
+## Roadmap
+
+See the [open issues][issues-url] for proposed features and known issues.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- LICENSE -->
 ## License
 
-[MIT License](LICENSE)
+Distributed under the MIT License. See [`LICENSE`][license-url] for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- CONTACT -->
+## Contact
+
+Project Link: [https://github.com/Balaji01-4D/pgxcli](https://github.com/Balaji01-4D/pgxcli)
+
+Bug reports and feature requests: [GitHub Issues][issues-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
+
+* [pgx][pgx-url]
+* [Cobra][cobra-url]
+* [Viper][viper-url]
+* [go-pretty][go-pretty-url]
+* [go-prompter][go-prompter-url]
+* [pg_query_go][pg-query-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/Balaji01-4D/pgxcli.svg?style=for-the-badge
+[contributors-url]: https://github.com/Balaji01-4D/pgxcli/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Balaji01-4D/pgxcli.svg?style=for-the-badge
+[forks-url]: https://github.com/Balaji01-4D/pgxcli/network/members
+[stars-shield]: https://img.shields.io/github/stars/Balaji01-4D/pgxcli.svg?style=for-the-badge
+[stars-url]: https://github.com/Balaji01-4D/pgxcli/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Balaji01-4D/pgxcli.svg?style=for-the-badge
+[issues-url]: https://github.com/Balaji01-4D/pgxcli/issues
+[license-shield]: https://img.shields.io/github/license/Balaji01-4D/pgxcli.svg?style=for-the-badge
+[license-url]: https://github.com/Balaji01-4D/pgxcli/blob/main/LICENSE
+
+[go-url]: https://go.dev/
+[pgx-url]: https://github.com/jackc/pgx
+[cobra-url]: https://github.com/spf13/cobra
+[viper-url]: https://github.com/spf13/viper
+[go-pretty-url]: https://github.com/jedib0t/go-pretty
+[go-prompter-url]: https://github.com/jedib0t/go-prompter
+[pg-query-url]: https://github.com/pganalyze/pg_query_go
+[cli-reference-url]: https://github.com/Balaji01-4D/pgxcli/blob/main/docs/src/content/docs/reference/cli-reference.md
