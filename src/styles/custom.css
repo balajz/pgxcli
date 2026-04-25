@@ -6,20 +6,28 @@
 	backdrop-filter: blur(16px);
 }
 
-/* Ensure the hero image doesn't look weird with the header */
-[data-has-hero] .hero img {
+/* Fix hero image in production builds: Astro wraps <Image> in <picture> which
+   Starlight's own ".hero > img" selector misses, causing the image to be unconstrained. */
+[data-has-hero] .hero > img,
+[data-has-hero] .hero > picture {
 	filter: drop-shadow(0 0 3rem var(--sl-color-accent-low));
-	max-height: 400px;
-	width: auto;
+	object-fit: contain;
+	width: min(70%, 20rem);
+	height: auto;
+	margin-inline: auto;
+}
+
+[data-has-hero] .hero > picture > img {
+	width: 100%;
+	height: auto;
 	object-fit: contain;
 }
 
-[data-has-hero] .hero picture {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	max-height: 400px;
-	overflow: visible;
+@media (min-width: 50rem) {
+	[data-has-hero] .hero > picture {
+		order: 2;
+		width: min(100%, 25rem);
+	}
 }
 
 /* ---------------------------------------------------------
