@@ -24,16 +24,18 @@ Here's the complete default configuration:
 # Postgres prompt
 # \t - Current date and time
 # \u - Username
-# \h - Short hostname (up to first '.')
-# \H - Full hostname
+# \h - Short hostname of the server (up to first '.')
+# \H - Hostname of the server
 # \d - Database name
-# \p - Port
+# \p - Database port
 # \n - Newline
 prompt = "\\u@\\h:\\d> "
 
 # Syntax highlighting style
-# Available: monokai, dracula, nord, onedark, github-dark,
-#            gruvbox, solarized-dark, xcode-dark, darcula, catppuccin-mocha
+# Available:
+#   default (same as monokai), monokai, dracula, nord, onedark, github-dark
+#   github, gruvbox, gruvbox-light, solarized-dark, solarized-light
+#   catppuccin-mocha, rose-pine, tokyonight-night, xcode-dark, ...
 # Full list: https://xyproto.github.io/splash/docs/index.html
 style = "monokai"
 
@@ -44,15 +46,37 @@ history_file = "default"
 log_file = "default"
 
 # Pager behavior for long output
-#   auto   - page only when output exceeds terminal height
-#   always - always pipe through pager
-#   never  - print directly
+#   auto   - use pager only when output is large
+#   always - always use pager in interactive terminal mode
+#   never  - never use pager
 pager = "auto"
 
 # Error handling for multi-statement execution
 #   STOP   - stop on first error
 #   RESUME - continue executing remaining statements
 on_error = "STOP"
+
+# Table border/line style
+# Valid values:
+#   "none", "ascii", "light", "heavy", "double", "double_long"
+#   "light_heavy", "heavy_light", "light_double", "double_light", "rounded", "markdown"
+#   "graphical", "merger", "default", "dotted", "arrow", "starry", "hearts"
+#   "circuit", "nature", "artistic", "8bit", "chaos", "dots", "blocks", "zen"
+#   "vintage", "sketch", "arrow_double", "celestial", "cyber", "runic", "industrial"
+#   "ink", "arcade", "blossom", "frosted", "mosaic", "ufo", "steampunk", "galaxy"
+#   "jazz", "puzzle", "hypno"
+[table]
+style = "default"
+
+# Table text colors
+# Valid values:
+#   "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "default"
+# High-intensity variants use a trailing "+":
+#   "black+", "red+", "green+", "yellow+", "blue+", "magenta+", "cyan+", "white+"
+[table.color]
+header  = "cyan"
+column  = "white"
+caption = "white"
 ```
 
 ---
@@ -82,6 +106,7 @@ The Chroma syntax highlighting theme applied to your SQL as you type.
 Some popular choices:
 
 - `monokai` (default)
+- `default` (alias for `monokai`)
 - `dracula`
 - `nord`
 - `catppuccin-mocha`
@@ -111,7 +136,7 @@ Controls when long output is piped through a pager (`less` on Linux/macOS, `more
 
 | Value | Behavior |
 |-------|----------|
-| `auto` | Page when output exceeds terminal height or 4 KB |
+| `auto` | Page when output exceeds terminal height |
 | `always` | Always use the pager |
 | `never` | Print directly to the terminal |
 
@@ -136,3 +161,69 @@ For example, if you paste three statements and the second one has a syntax error
 
 - **STOP**: only the first statement runs.
 - **RESUME**: the first and third statements run.
+
+---
+
+## Table Settings
+
+These settings live under the `[table]` section and control how query results are rendered.
+
+### `table.style`
+
+Controls the border/line style of result tables.
+
+**Default:** `default`
+
+| Group | Styles |
+|-------|--------|
+| Plain | `none`, `ascii` |
+| Single-line | `light`, `heavy`, `rounded`, `dotted`, `default` |
+| Double-line | `double`, `double_long`, `double_light` |
+| Mixed | `light_heavy`, `heavy_light`, `light_double` |
+| Special | `markdown`, `graphical`, `merger` |
+| Decorative | `arrow`, `arrow_double`, `starry`, `hearts`, `circuit`, `nature`, `artistic`, `8bit`, `chaos`, `dots`, `blocks`, `zen` |
+| Themed | `vintage`, `sketch`, `celestial`, `cyber`, `runic`, `industrial`, `ink`, `arcade`, `blossom`, `frosted`, `mosaic`, `ufo`, `steampunk`, `galaxy`, `jazz`, `puzzle`, `hypno` |
+
+:::tip
+Use `markdown` to copy-paste query results directly into Markdown documents.
+:::
+
+### `table.color.header`
+
+Foreground color for the header row text.
+
+**Default:** `cyan`
+
+### `table.color.column`
+
+Foreground color for data cell text.
+
+**Default:** `white`
+
+### `table.color.caption`
+
+Foreground color for the caption line (e.g., row count footer).
+
+**Default:** `white`
+
+#### Available Colors
+
+| Value | Description |
+|-------|-------------|
+| `default` | Terminal default for that element |
+| `black` | Black |
+| `red` | Red |
+| `green` | Green |
+| `yellow` | Yellow |
+| `blue` | Blue |
+| `magenta` | Magenta |
+| `cyan` | Cyan |
+| `white` | White |
+| `black+` | High-intensity black (bright) |
+| `red+` | High-intensity red |
+| `green+` | High-intensity green |
+| `yellow+` | High-intensity yellow |
+| `blue+` | High-intensity blue |
+| `magenta+` | High-intensity magenta |
+| `cyan+` | High-intensity cyan |
+| `white+` | High-intensity white (brightest) |

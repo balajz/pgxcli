@@ -9,10 +9,29 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Pgxcli',
-			logo: {
-				src: './src/assets/logo.png',
+			customCss: [
+				'./src/styles/tokens.css',
+				'./src/styles/custom.css',
+			],
+			head: [
+				{
+					tag: 'script',
+					attrs: { src: '/pgxcli/scripts/navbar-scroll.js', defer: true },
+				},
+			],
+			expressiveCode: {
+				themes: ['github-dark'],
+				styleOverrides: {
+					codeBackground: '#0e1628',
+					frames: {
+						frameBoxShadowCssValue: 'none',
+						editorActiveTabBackground: '#0e1628',
+						editorTabBarBackground: '#1a2744',
+						terminalTitlebarBackground: '#1a2744',
+						terminalBackground: '#0e1628',
+					},
+				},
 			},
-			customCss: ['./src/styles/custom.css'],
 			social: [
 				{
 					label: 'GitHub',
