@@ -88,6 +88,7 @@ func (r *rowStreamer) Next() ([]any, error) {
 		return vals, nil
 	}
 	if err := r.rows.Err(); err != nil {
+		r.rows.Close()
 		r.closed = true
 		return nil, err
 	}
