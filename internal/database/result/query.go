@@ -38,7 +38,7 @@ func (r *QueryResult) Columns() []string {
 }
 
 func (r *QueryResult) Rows() ([][]any, error) {
-	collected := make([][]any, 256) // pre alloc
+	collected := make([][]any, 0, 256)
 	for {
 		row, err := r.Next()
 		if err == io.EOF {
