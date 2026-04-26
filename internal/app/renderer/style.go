@@ -19,6 +19,8 @@ func GetTableStyle(s *config.Config) renderer.ColorizedConfig {
 	colorCfg := renderer.ColorizedConfig{}
 	colorCfg.Header = renderer.Tint{FG: renderer.Colors{getHeaderColor(s.Table.Color.Header)}}
 	colorCfg.Column = renderer.Tint{FG: renderer.Colors{getColumnColor(s.Table.Color.Column)}}
+	colorCfg.Border = renderer.Tint{FG: renderer.Colors{color.FgWhite}}
+	colorCfg.Separator = renderer.Tint{FG: renderer.Colors{color.FgWhite}}
 	colorCfg.Symbols = tw.NewSymbols(resolveStyle(s.Table.Style))
 	return colorCfg
 }
