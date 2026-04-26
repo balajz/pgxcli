@@ -59,4 +59,4 @@ esac
 
 [ -z "$tag_name" ] || export GORELEASER_CURRENT_TAG="$tag_name"
 
-goreleaser release -f "$goreleaser_config" --clean --skip validate,announce
+goreleaser release -f "$goreleaser_config" --clean --skip validate,publish,announce
