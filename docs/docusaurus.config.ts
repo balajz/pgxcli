@@ -71,11 +71,6 @@ const config: Config = {
       title: 'pgxcli',
       items: [
         {
-          type: 'html',
-          position: 'left',
-          value: '<span class="navbar-version">v0.1.0</span>',
-        },
-        {
           type: 'docSidebar',
           sidebarId: 'docsSidebar',
           position: 'left',
@@ -98,29 +93,10 @@ const config: Config = {
         },
       ],
     },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Docs',
-          items: [
-            {label: 'Getting Started', to: '/docs/guides/getting-started'},
-            {label: 'CLI Reference', to: '/docs/reference/cli-reference'},
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {label: 'GitHub', href: 'https://github.com/balaji01-4d/pgxcli'},
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} pgxcli`,
-    },
     prism: {
       // vsDark gives clean neutral syntax colours that don't clash with purple UI
-      theme: prismThemes.vsDark,
-      darkTheme: prismThemes.vsDark,
+      theme: prismThemes.nightOwl,
+      darkTheme: prismThemes.nightOwl,
       additionalLanguages: ['bash', 'toml', 'sql', 'powershell'],
     },
   } satisfies Preset.ThemeConfig,
