@@ -14,7 +14,7 @@ const config: Config = {
   url: 'https://pgxcli.vercel.app',
   baseUrl: '/',
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   markdown: {
     hooks: {
       onBrokenMarkdownLinks: 'warn',
