@@ -11,7 +11,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://balaji01-4d.github.io/pgxcli/">
+  <a href="https://pgxcli.vercel.app/">
     <img src="https://res.cloudinary.com/dsdupsv2g/image/upload/v1776949930/logo_l1mlz5.png" alt="pgxcli banner" width="420"/>
   </a>
   <h3 align="center">pgxcli</h3>
@@ -171,5 +171,5 @@ For configuration documentation, see the [docs][config-ref]
 [pg-query-url]: https://github.com/pganalyze/pg_query_go
 [cli-reference-url]: https://github.com/Balaji01-4D/pgxcli/blob/main/docs/src/content/docs/reference/cli-reference.md
 [pgcli-url]: https://github.com/dbcli/pgcli
-[cli-ref]: https://balaji01-4d.github.io/pgxcli/reference/cli-reference/
-[config-ref]: https://balaji01-4d.github.io/pgxcli/guides/configuration/
+[cli-ref]: https://pgxcli.vercel.app/reference/cli-reference/
+[config-ref]: https://pgxcli.vercel.app/guides/configuration/
