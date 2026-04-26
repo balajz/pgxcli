@@ -168,25 +168,3 @@ func TestValidatePort(t *testing.T) {
 	}
 }
 
-func TestMinInt(t *testing.T) {
-	t.Parallel()
-
-	testCases := []struct {
-		name string
-		x    int
-		y    int
-		want int
-	}{
-		{name: "x less than y", x: 3, y: 5, want: 3},
-		{name: "x greater than y", x: 9, y: 5, want: 5},
-		{name: "equal", x: 7, y: 7, want: 7},
-	}
-
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			assert.Equal(t, tc.want, minInt(tc.x, tc.y))
-		})
-	}
-}

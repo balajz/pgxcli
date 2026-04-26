@@ -56,7 +56,7 @@ func (f *debugFlag) bind(cmd *cobra.Command) {
 }
 
 
-// interactiveConnFlag lanuches a form for filling the database connection parameters.
+// interactiveConnFlag launches a form for filling the database connection parameters.
 type interactiveConnFlag bool
 
 func (f *interactiveConnFlag) bind(cmd *cobra.Command) {
