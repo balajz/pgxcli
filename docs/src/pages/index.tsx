@@ -27,8 +27,8 @@ export default function Home(): ReactNode {
             <Link className={styles.btnPrimary} to="/docs/guides/getting-started">
               Get Started
             </Link>
-            <Link className={styles.btnSecondary} href="https://github.com/balaji01-4d/pgxcli">
-              View on GitHub
+            <Link className={styles.btnSecondary} to="http://localhost:3000/docs/guides/getting-started#installation">
+              Download
             </Link>
           </div>
         </div>
