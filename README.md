@@ -12,9 +12,9 @@
 <br />
 <div align="center">
   <a href="https://pgxcli.vercel.app/">
-    <img src="https://res.cloudinary.com/dsdupsv2g/image/upload/v1776949930/logo_l1mlz5.png" alt="pgxcli banner" width="420"/>
+    <img src="https://res.cloudinary.com/dsdupsv2g/image/upload/q_auto/f_auto/v1777298704/1_oepvrn.png" alt="pgxcli banner" width="100%"/>
   </a>
-  <h3 align="center">pgxcli</h3>
+  <h1 align="center">pgxcli</h1>
   <p align="center">
     Interactive PostgreSQL command-line client written in Go.
   </p>
