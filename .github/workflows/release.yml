@@ -70,7 +70,6 @@ jobs:
         run: bash script/release --local "$TAG_NAME" --platform linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
 
       - uses: actions/upload-artifact@v4
         with:

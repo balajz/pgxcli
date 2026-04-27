@@ -59,10 +59,4 @@ esac
 
 [ -z "$tag_name" ] || export GORELEASER_CURRENT_TAG="$tag_name"
 
-if [ "$platform" = "linux" ] && [ -n "${AUR_SSH_PRIVATE_KEY:-}" ]; then
-  # Disable GitHub release creation (handled by the release job) but allow AUR publish
-  printf '\nrelease:\n  disable: true\n' >> "$goreleaser_config"
-  goreleaser release -f "$goreleaser_config" --clean --skip validate,announce
-else
-  goreleaser release -f "$goreleaser_config" --clean --skip validate,publish,announce
-fi
+goreleaser release -f "$goreleaser_config" --clean --skip validate,publish,announce
