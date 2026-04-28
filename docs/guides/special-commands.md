@@ -4,7 +4,7 @@ description: Backslash commands and built-in commands available inside the pgxcl
 sidebar_position: 5
 ---
 
-pgxcli supports PostgreSQL-style backslash commands and a few built-in extras. Type them directly at the prompt.
+pgxcli supports PostgreSQL-style backslash commands. Type them directly at the prompt.
 
 ---
 
@@ -25,7 +25,7 @@ These control your session:
 \c other_db
 ```
 
-pgxcli closes the current connection and opens a new one to `other_db`. Your prompt updates to reflect the new database. The server, user, and port stay the same.
+pgxcli closes the current connection and opens a new one to `other_db`. The server, user, and port stay the same.
 
 ### Connection Info
 
@@ -77,7 +77,3 @@ These are pgxcli-specific:
 ## SQL Execution
 
 Anything that isn't a special command is treated as SQL and sent to the database.
-
-You can run multiple statements at once — pgxcli splits them by semicolons and executes each one in order. If a statement fails, the behavior depends on your [`on_error`](/docs/guides/configuration#on_error) setting.
-
-Query results are rendered as tables. Write operations (like `INSERT` or `CREATE TABLE`) print the command tag (e.g., `INSERT 0 1`). Execution time is shown after each result.
