@@ -42,7 +42,7 @@ export default function Home(): ReactNode {
                   Get Started
                 </Link>
                 <Link className={styles.btnSecondary} to="/docs/guides/getting-started#installation">
-                  Download
+                  Install
                 </Link>
               </div>
             </div>
