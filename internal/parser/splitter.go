@@ -8,7 +8,7 @@ import (
 )
 
 // Split splits sql into into a slice of strings each containing one SQL statement.
-func SplitSqlStatements(sql string) []string {
+func SplitSQLStatements(sql string) []string {
 	l := &sqlLexer{
 		src:     sql,
 		stateFn: rawState,

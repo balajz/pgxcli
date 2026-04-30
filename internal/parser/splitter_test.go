@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSplitSqlStatements(t *testing.T) {
+func TestSplitSQLStatements(t *testing.T) {
 	tests := []struct {
 		name string
 		sql  string
@@ -36,7 +36,7 @@ func TestSplitSqlStatements(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := parser.SplitSqlStatements(tt.sql)
+			got := parser.SplitSQLStatements(tt.sql)
 			assert.Equal(t, tt.want, got)
 		})
 	}

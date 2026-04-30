@@ -110,7 +110,7 @@ func (p *pgxCLI) Start(ctx context.Context, client *database.Client) {
 		}
 
 		p.logger.Debug("executing query")
-		stmts := parser.SplitSqlStatements(trimmedInput)
+		stmts := parser.SplitSQLStatements(trimmedInput)
 
 	StatementsLoop:
 		for _, stmt := range stmts {
