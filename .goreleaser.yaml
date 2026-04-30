@@ -15,7 +15,7 @@ before:
 builds:
   - id: linux
     main: ./cmd/pgxcli
-    binary: bin/pgxcli
+    binary: pgxcli
     goos: [linux]
     goarch: [amd64, arm64]
     env:
@@ -27,7 +27,7 @@ builds:
 
   - id: darwin
     main: ./cmd/pgxcli
-    binary: bin/pgxcli
+    binary: pgxcli
     goos: [darwin]
     goarch: [amd64, arm64]
     env:
@@ -39,7 +39,7 @@ builds:
 
   - id: windows
     main: ./cmd/pgxcli
-    binary: bin/pgxcli
+    binary: pgxcli
     goos: [windows]
     goarch: [amd64]
     env:

@@ -45,29 +45,34 @@ jobs:
       - name: Build Windows binary
         env:
           TAG_NAME: ${{ inputs.tag_name }}
-        shell: bash
+        shell: pwsh
         run: |
-          VERSION="${TAG_NAME#v}"
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build \
-            -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${GITHUB_SHA}" \
-            -o build/windows/amd64/pgxcli.exe \
+          $VERSION = $env:TAG_NAME -replace '^v', ''
+          $env:GOOS = "windows"
+          $env:GOARCH = "amd64"
+          $env:CGO_ENABLED = "0"
+          go build `
+            -ldflags "-s -w -X main.version=$VERSION -X main.commit=$env:GITHUB_SHA" `
+            -o build/windows/amd64/pgxcli.exe `
             ./cmd/pgxcli
 
       - name: Set up MSBuild
+        id: setupmsbuild 
         uses: microsoft/setup-msbuild@v2
 
       - name: Build MSI (x64)
         env:
           TAG_NAME: ${{ inputs.tag_name }}
-        shell: bash
+        shell: pwsh
         run: |
-          VERSION="${TAG_NAME#v}"
-          msbuild build/windows/pgxcli.wixproj \
-            -p:Configuration=Release \
-            -p:Platform=x64 \
-            -p:SourceDir="$PWD/build/windows/amd64/" \
-            -p:OutputPath="$PWD/dist" \
-            -p:OutputName="pgxcli_${VERSION}_windows_amd64" \
+          $VERSION = $env:TAG_NAME -replace '^v', ''
+          $MSBUILD = "${{ steps.setupmsbuild.outputs.msbuildPath }}\MSBuild.exe"
+          & $MSBUILD build/windows/pgxcli.wixproj `
+            -p:Configuration=Release `
+            -p:Platform=x64 `
+            -p:SourceDir="$PWD\build\windows\amd64\" `
+            -p:OutputPath="$PWD\dist" `
+            -p:OutputName="pgxcli_${VERSION}_windows_amd64" `
             -p:ProductVersion="$VERSION"
 
       - name: Upload MSI artifact
