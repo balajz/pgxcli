@@ -97,22 +97,32 @@ That could change as pgxcli matures. I would really appreciate if you give pgxcl
 
 ### Installation
 
+`pgxcli` is distributed as a single binary for Linux, macOS, and Windows. You can download the latest version from the [releases page][releases-url].
+
 #### Linux
+Download the `.deb`, `.rpm`, `.apk`, or `.pkg.tar.zst` for your architecture and install it using your package manager.
 ```bash
-# Debian / Ubuntu
+# Example for Debian / Ubuntu
 sudo dpkg -i pgxcli_*_linux_amd64.deb
 ```
 
 #### macOS
+Download the `.tar.gz` for your architecture (Intel or Apple Silicon), extract it, and move the binary to your `PATH`.
 ```bash
-brew tap Balaji01-4D/pgxcli
-brew install pgxcli
+tar -xzf pgxcli_*_darwin_arm64.tar.gz
+sudo mv pgxcli /usr/local/bin/
 ```
 
 #### Windows
-Download the `.msi` from the [releases page][releases-url] and run it.
+Download the `.msi` or `.zip` from the [releases page][releases-url]. The installer will automatically add `pgxcli` to your `PATH`.
 
-For more installation methods, see the [Installation Guide][install-ref].
+#### Go Install
+If you have Go installed, you can install directly:
+```bash
+go install github.com/balaji01-4d/pgxcli/cmd/pgxcli@latest
+```
+
+For more details, see the [Installation Guide][install-ref].
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
