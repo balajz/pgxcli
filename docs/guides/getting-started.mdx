@@ -42,16 +42,18 @@ Pick your operating system or preferred installation method:
     ```
   </TabItem>
   <TabItem value="mac" label="Mac">
-    **Homebrew** *(coming soon)*
+    Grab the latest `.tar.gz` for your architecture from the [releases page](https://github.com/Balaji01-4D/pgxcli/releases).
 
+    **Manual Installation**
     ```bash
-    brew tap Balaji01-4D/pgxcli
-    brew install pgxcli
+    # For Apple Silicon (M1/M2/M3)
+    tar -xzf pgxcli_0.1.0_darwin_arm64.tar.gz
+    sudo mv pgxcli /usr/local/bin/
+
+    # For Intel Mac
+    tar -xzf pgxcli_0.1.0_darwin_amd64.tar.gz
+    sudo mv pgxcli /usr/local/bin/
     ```
-
-    **Archive (tar.gz)**
-
-    Grab the latest `.tar.gz` from the [releases page](https://github.com/Balaji01-4D/pgxcli/releases) and move the binary to your `PATH`.
   </TabItem>
   <TabItem value="windows" label="Windows">
     **Installer (MSI)** — recommended
@@ -61,11 +63,6 @@ Pick your operating system or preferred installation method:
     **Archive (zip)**
 
     Grab the `.zip` from the [releases page](https://github.com/Balaji01-4D/pgxcli/releases), extract it, and place `pgxcli.exe` anywhere on your `PATH`.
-
-    **Chocolatey** *(coming soon)*
-    ```powershell
-    choco install pgxcli
-    ```
   </TabItem>
   <TabItem value="go-install" label="Go Install">
     Make sure you have **Go 1.21+**.
