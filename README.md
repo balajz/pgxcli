@@ -160,6 +160,20 @@ For configuration documentation, see the [docs][config-ref]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- CONTRIBUTING -->
+## Contributing
+
+We welcome contributions of all kinds — bug reports, feature requests, documentation improvements, and code contributions. Whether you're fixing a typo, reporting an issue, or building a feature, every contribution helps make pgxcli better.
+
+To get started, please read our [Contributing Guide](CONTRIBUTING.md) for:
+- How to report bugs and suggest features
+- Development setup and local testing
+- Our code style and testing conventions
+- Guidelines for pull requests
+
+Thank you for being part of the community! 🙌
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
