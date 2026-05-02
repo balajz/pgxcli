@@ -393,16 +393,6 @@ func parsePositionalDBAndUser(args []string) (string, string) {
 	return db, user
 }
 
-func promptPassword() (string, error) {
-	var pwd string
-	fmt.Print("Password: ")
-	_, err := fmt.Scanln(&pwd)
-	if err != nil {
-		return "", err
-	}
-	return pwd, nil
-}
-
 func mustParsePort(port string) (uint16, error) {
 	portNum, err := strconv.Atoi(port)
 	if err != nil {

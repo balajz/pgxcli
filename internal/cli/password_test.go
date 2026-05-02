@@ -1,7 +1,10 @@
 package cli
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -45,4 +48,31 @@ func Test_shouldAskForPassword(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func Test_promptPassword(t *testing.T) {
+	originalReadPassword := readPassword
+	originalStdout := os.Stdout
+	t.Cleanup(func() {
+		readPassword = originalReadPassword
+		os.Stdout = originalStdout
+	})
+
+	readPassword = func(fd int) ([]byte, error) {
+		return []byte("secret"), nil
+	}
+
+	reader, writer, err := os.Pipe()
+	assert.NoError(t, err)
+	os.Stdout = writer
+
+	password, err := promptPassword()
+	assert.NoError(t, err)
+	assert.Equal(t, "secret", password)
+
+	assert.NoError(t, writer.Close())
+	var output bytes.Buffer
+	_, err = io.Copy(&output, reader)
+	assert.NoError(t, err)
+	assert.Equal(t, "Password: \n", output.String())
 }
