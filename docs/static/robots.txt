@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://pgxcli.vercel.app/sitemap.xml
