@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/term"
+
 	"github.com/balaji01-4d/pgxcli/internal/app"
 	"github.com/balaji01-4d/pgxcli/internal/config"
 	"github.com/balaji01-4d/pgxcli/internal/database"
@@ -394,13 +396,25 @@ func parsePositionalDBAndUser(args []string) (string, string) {
 }
 
 func promptPassword() (string, error) {
-	var pwd string
 	fmt.Print("Password: ")
-	_, err := fmt.Scanln(&pwd)
+	fd := int(os.Stdin.Fd())
+	oldState, err := term.GetState(fd)
+	if err != nil {
+		// Fallback: stdin is not a TTY (e.g., piped input)
+		var pwd string
+		_, err = fmt.Scanln(&pwd)
+		if err != nil {
+			return "", err
+		}
+		return pwd, nil
+	}
+	defer term.Restore(fd, oldState)
+	pwd, err := term.ReadPassword(fd)
 	if err != nil {
 		return "", err
 	}
-	return pwd, nil
+	fmt.Println()
+	return string(pwd), nil
 }
 
 func mustParsePort(port string) (uint16, error) {
