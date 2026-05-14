@@ -1,6 +1,6 @@
 module github.com/balaji01-4d/pgxcli
 
-go 1.26.1
+go 1.25.8
 
 require (
 	charm.land/bubbletea/v2 v2.0.6
