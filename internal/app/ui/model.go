@@ -75,7 +75,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case ReadyMsg:
 		m.executing = false
-		m.input.Prompt = msg.Prefix
+		if msg.Prefix != "" {
+			m.input.Prompt = msg.Prefix
+		}
 		m.input.Reset()
 		return m, nil
 
@@ -109,22 +111,36 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) handleInput() (tea.Model, tea.Cmd) {
-	input := m.input.Value()            // used when displaying, history, and prev input.
-	trimmed := strings.TrimSpace(input) // only used when executing commands.
+	input := m.input.Value()
+	trimmed := strings.TrimSpace(input)
+
 	if trimmed == "" {
-		return m, nil
+		return m, tea.Sequence(
+			m.printUserInput(userInputStyle.Render(m.input.Prompt), ""),
+			func() tea.Msg {
+				return ReadyMsg{Prefix: m.input.Prompt}
+			},
+		)
 	}
-
-	highlightedInput := postgresHighlighter("monokai")(input)
-
-	userContent := lipgloss.JoinHorizontal(lipgloss.Left, userInputStyle.Render(m.input.Prompt), highlightedInput)
-	printuserContent := tea.Printf("%s", userContent)
 
 	m.prevUserInput = input
 	m.executing = true
 	m.input.AddHistoryEntry(input)
 
-	return m, tea.Sequence(printuserContent, m.execute(trimmed))
+	return m, tea.Sequence(
+		m.printUserInput(userInputStyle.Render(m.input.Prompt), input),
+		m.execute(trimmed),
+	)
+}
+
+func (m *Model) printUserInput(prefix, input string) tea.Cmd {
+	var highlightedInput string
+	if input != "" {
+		highlightedInput = postgresHighlighter("monokai")(input)
+	}
+
+	userContent := lipgloss.JoinHorizontal(lipgloss.Left, userInputStyle.Render(prefix), highlightedInput)
+	return tea.Printf("%s", userContent)
 }
 
 func (m *Model) View() tea.View {
