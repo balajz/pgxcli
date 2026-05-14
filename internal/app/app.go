@@ -17,6 +17,7 @@ import (
 	"github.com/balaji01-4d/pgxcli/internal/app/renderer"
 	"github.com/balaji01-4d/pgxcli/internal/app/ui"
 	"github.com/balaji01-4d/pgxcli/internal/cliio"
+	"github.com/balaji01-4d/pgxcli/internal/completer"
 	"github.com/balaji01-4d/pgxcli/internal/config"
 	"github.com/balaji01-4d/pgxcli/internal/database"
 	"github.com/balaji01-4d/pgxcli/internal/database/result"
@@ -29,8 +30,6 @@ type Application interface {
 	// Start starts the main repl loop, reading input, executing commands and printing results until the user exits.
 	Start(ctx context.Context, client *database.Client) error
 
-	SetAutoCompleteKeywords(keywords []string)
-
 	// Close performs saving history before exiting.
 	Close() error
 }
@@ -41,25 +40,21 @@ var builtinsCommand = map[string]func(){
 
 // pgxCLI is the main implementation of the Application interface.
 type pgxCLI struct {
-	model   *ui.Model
-	program *tea.Program
-	Printer cliio.Printer
-	config  *config.Config
-	logger  *slog.Logger
-
-	pgkws []string
+	model     *ui.Model
+	program   *tea.Program
+	Printer   cliio.Printer
+	config    *config.Config
+	logger    *slog.Logger
+	completer *completer.Completer
 }
 
-func New(cfg *config.Config, printer cliio.Printer, logger *slog.Logger) (Application, error) {
+func New(cfg *config.Config, printer cliio.Printer, logger *slog.Logger, completer *completer.Completer) (Application, error) {
 	return &pgxCLI{
-		config:  cfg,
-		logger:  logger,
-		Printer: printer,
+		config:    cfg,
+		logger:    logger,
+		Printer:   printer,
+		completer: completer,
 	}, nil
-}
-
-func (p *pgxCLI) SetAutoCompleteKeywords(keywords []string) {
-	p.pgkws = keywords
 }
 
 func (p *pgxCLI) execute(ctx context.Context, client *database.Client, query string) tea.Cmd {
@@ -147,7 +142,7 @@ func (p *pgxCLI) Start(ctx context.Context, client *database.Client) error {
 	}
 
 	initialPrefix := client.ParsePrompt(p.config.Main.Prompt)
-	m, err := ui.New(initialPrefix, p.pgkws, p.config.Main.HistoryFile, executeFunc)
+	m, err := ui.New(initialPrefix, p.completer.GetKeyWords(), p.config.Main.HistoryFile, executeFunc)
 	if err != nil {
 		return fmt.Errorf("creating UI model: %w", err)
 	}
