@@ -408,7 +408,10 @@ func promptPassword() (string, error) {
 		}
 		return pwd, nil
 	}
-	defer term.Restore(fd, oldState)
+	if err := term.Restore(fd, oldState); err != nil {
+		// Best effort restore — terminal may still be usable
+		fmt.Println()
+	}
 	pwd, err := term.ReadPassword(fd)
 	if err != nil {
 		return "", err
