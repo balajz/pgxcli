@@ -193,6 +193,7 @@ func resolveConnectionParams(
 		port:     portOpt,
 	}, nil
 }
+
 func resolveInteractiveConnectionParams(
 	cmd *cobra.Command,
 	argDB string,
@@ -322,7 +323,10 @@ func connectWithFields(
 	}
 
 	cliCtx.Logger.Debug("Connection failed, prompting for password")
-	if wErr := renderer.Error(fmt.Errorf("Wrong password, try again."), os.Stderr); wErr != nil {
+	if wErr := renderer.Error(
+		fmt.Errorf("Wrong password, try again."), //nolint // user-facing message
+		os.Stderr,
+	); wErr != nil {
 		return wErr
 	}
 
