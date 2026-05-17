@@ -58,7 +58,7 @@ func (r *QueryResult) Rows() ([][]any, error) {
 	return collected, nil
 }
 
-func (r *QueryResult) Caption() string { return "" } // TODO: add execution time or row count
+func (r *QueryResult) Caption() string { return r.CommandTag() }
 
 type rowStreamer struct {
 	rows    pgx.Rows

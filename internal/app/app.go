@@ -311,8 +311,6 @@ func (p *pgxCLI) handleQueryResult(r result.Result) (tea.Cmd, error) {
 	output := s.String()
 	if len(res.Columns()) == 0 {
 		output = res.CommandTag()
-	} else {
-		output += res.CommandTag()
 	}
 
 	// Append timing info to the output
