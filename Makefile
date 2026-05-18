@@ -67,3 +67,18 @@ clean:
 
 update:
 	@go get -u ./...
+
+
+
+DOCS_DIR := ../docs-site
+VERSION ?= v0.1.1
+
+docs-init:
+	git worktree add $(DOCS_DIR) docs
+
+docs-status:
+	cd $(DOCS_DIR) && git status
+
+docs-clean:
+	git worktree remove $(DOCS_DIR)
+	git worktree prune
