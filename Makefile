@@ -80,5 +80,6 @@ docs-status:
 	cd $(DOCS_DIR) && git status
 
 docs-clean:
-	git worktree remove $(DOCS_DIR)
+	git worktree remove --force $(DOCS_DIR)
+	rm -rf $(DOCS_DIR)
 	git worktree prune
