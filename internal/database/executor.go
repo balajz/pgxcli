@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/balaji01-4d/pgxcli/internal/database/result"
+	"github.com/balajz/pgxcli/internal/database/result"
 	"github.com/balaji01-4d/pgxspecial"
 
 	"github.com/jackc/pgx/v5"

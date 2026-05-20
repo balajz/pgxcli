@@ -16,7 +16,7 @@ import (
 	"github.com/Balaji01-4D/bubbline/editline"
 	"github.com/Balaji01-4D/bubbline/history"
 	"github.com/alecthomas/chroma/v2/quick"
-	"github.com/balaji01-4d/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/config"
 	"github.com/muesli/termenv"
 )
 

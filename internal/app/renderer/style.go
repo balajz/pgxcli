@@ -1,7 +1,7 @@
 package renderer
 
 import (
-	"github.com/balaji01-4d/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/config"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter/renderer"
 	"github.com/olekukonko/tablewriter/tw"

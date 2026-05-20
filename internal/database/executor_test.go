@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"testing"
 
-	dbresult "github.com/balaji01-4d/pgxcli/internal/database/result"
+	dbresult "github.com/balajz/pgxcli/internal/database/result"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

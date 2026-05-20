@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/balaji01-4d/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balaji01-4d/pgxspecial"
 )
 

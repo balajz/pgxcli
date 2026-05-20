@@ -3,7 +3,7 @@ package renderer
 import (
 	"testing"
 
-	"github.com/balaji01-4d/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/config"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter/tw"
 	"github.com/stretchr/testify/assert"

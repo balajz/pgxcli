@@ -1,4 +1,4 @@
-module github.com/balaji01-4d/pgxcli
+module github.com/balajz/pgxcli
 
 go 1.25.8
 

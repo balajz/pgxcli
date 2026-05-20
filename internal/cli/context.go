@@ -2,11 +2,11 @@
 package cli
 
 import (
-	"github.com/balaji01-4d/pgxcli/internal/app"
-	"github.com/balaji01-4d/pgxcli/internal/cliio"
-	"github.com/balaji01-4d/pgxcli/internal/config"
-	"github.com/balaji01-4d/pgxcli/internal/database"
-	"github.com/balaji01-4d/pgxcli/internal/logger"
+	"github.com/balajz/pgxcli/internal/app"
+	"github.com/balajz/pgxcli/internal/cliio"
+	"github.com/balajz/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/database"
+	"github.com/balajz/pgxcli/internal/logger"
 )
 
 // CliContext holds the dependencies for cli.

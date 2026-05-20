@@ -119,7 +119,7 @@ Download the `.msi` or `.zip` from the [releases page][releases-url]. The instal
 #### Go Install
 If you have Go installed, you can install directly:
 ```bash
-go install github.com/balaji01-4d/pgxcli/cmd/pgxcli@latest
+go install github.com/balajz/pgxcli/cmd/pgxcli@latest
 ```
 
 For more details, see the [Installation Guide][install-ref].

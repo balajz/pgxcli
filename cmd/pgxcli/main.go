@@ -9,9 +9,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/balaji01-4d/pgxcli/internal/app/renderer"
-	"github.com/balaji01-4d/pgxcli/internal/cli"
-	"github.com/balaji01-4d/pgxcli/internal/cliio"
+	"github.com/balajz/pgxcli/internal/app/renderer"
+	"github.com/balajz/pgxcli/internal/cli"
+	"github.com/balajz/pgxcli/internal/cliio"
 )
 
 func main() {

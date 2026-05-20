@@ -3,7 +3,7 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/balaji01-4d/pgxcli/internal/parser"
+	"github.com/balajz/pgxcli/internal/parser"
 	"github.com/stretchr/testify/assert"
 )
 

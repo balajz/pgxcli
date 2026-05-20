@@ -10,13 +10,13 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/balaji01-4d/pgxcli/internal/app"
-	"github.com/balaji01-4d/pgxcli/internal/app/renderer"
-	"github.com/balaji01-4d/pgxcli/internal/completer"
-	"github.com/balaji01-4d/pgxcli/internal/config"
-	"github.com/balaji01-4d/pgxcli/internal/database"
-	"github.com/balaji01-4d/pgxcli/internal/logger"
-	"github.com/balaji01-4d/pgxcli/internal/ui"
+	"github.com/balajz/pgxcli/internal/app"
+	"github.com/balajz/pgxcli/internal/app/renderer"
+	"github.com/balajz/pgxcli/internal/completer"
+	"github.com/balajz/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/database"
+	"github.com/balajz/pgxcli/internal/logger"
+	"github.com/balajz/pgxcli/internal/ui"
 	"github.com/spf13/cobra"
 )
 

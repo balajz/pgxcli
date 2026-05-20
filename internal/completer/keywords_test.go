@@ -3,7 +3,7 @@ package completer_test
 import (
 	"testing"
 
-	"github.com/balaji01-4d/pgxcli/internal/completer"
+	"github.com/balajz/pgxcli/internal/completer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
