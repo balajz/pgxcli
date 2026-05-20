@@ -16,4 +16,5 @@ dist/
 
 .docusaurus/
 build/
-pgxcli
+/pgxcli
+/.antigravitycli
