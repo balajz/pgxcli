@@ -3,6 +3,7 @@ package ui
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -48,6 +49,7 @@ type Model struct {
 
 	// execute executes a query passed and return as ExecCmdMsg + ReadyMsg.
 	execute func(string) tea.Cmd
+	cancel  func(ctx context.Context) error
 }
 
 func New(initialPrefix string, pgKeywords []string, historyFile string, style string, executeFunc func(string) tea.Cmd) (*Model, error) {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balaji01-4d/pgxspecial"
+	"github.com/balajz/pgxcli/internal/config"
 )
 
 type rowsTableResult interface {

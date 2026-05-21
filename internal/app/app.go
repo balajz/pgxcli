@@ -13,6 +13,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/balaji01-4d/pgxspecial"
 	"github.com/balajz/pgxcli/internal/app/commands"
 	"github.com/balajz/pgxcli/internal/app/renderer"
 	"github.com/balajz/pgxcli/internal/app/ui"
@@ -22,13 +23,12 @@ import (
 	"github.com/balajz/pgxcli/internal/database"
 	"github.com/balajz/pgxcli/internal/database/result"
 	"github.com/balajz/pgxcli/internal/parser"
-	"github.com/balaji01-4d/pgxspecial"
 )
 
 // Application defines the interface for the main application logic.
 type Application interface {
 	// Start starts the main repl loop, reading input, executing commands and printing results until the user exits.
-	Start(ctx context.Context, client *database.Client) error
+	Start(ctx context.Context) error
 
 	// Close performs saving history before exiting.
 	Close() error
@@ -46,20 +46,22 @@ type pgxCLI struct {
 	config    *config.Config
 	logger    *slog.Logger
 	completer *completer.Completer
+	client    *database.Client
 }
 
-func New(cfg *config.Config, printer cliio.Printer, logger *slog.Logger, completer *completer.Completer) (Application, error) {
+func New(cfg *config.Config, printer cliio.Printer, logger *slog.Logger, completer *completer.Completer, client *database.Client) (Application, error) {
 	return &pgxCLI{
 		config:    cfg,
 		logger:    logger,
 		Printer:   printer,
 		completer: completer,
+		client:    client,
 	}, nil
 }
 
-func (p *pgxCLI) execute(ctx context.Context, client *database.Client, query string) tea.Cmd {
+func (p *pgxCLI) execute(ctx context.Context, query string) tea.Cmd {
 	promptReady := func() tea.Msg {
-		prefix := client.ParsePrompt(p.config.Main.Prompt)
+		prefix := p.client.ParsePrompt(p.config.Main.Prompt)
 		return ui.ReadyMsg{Prefix: prefix} // this is used to unblock input after executing a command
 	}
 
@@ -72,7 +74,7 @@ func (p *pgxCLI) execute(ctx context.Context, client *database.Client, query str
 	}
 
 	return func() tea.Msg {
-		metaResult, okay, err := client.ExecuteSpecial(ctx, query)
+		metaResult, okay, err := p.client.ExecuteSpecial(ctx, query)
 		if err != nil {
 			p.logger.Error("error executing special command", "error", err)
 			return ui.ExecCmdMsg{Cmd: tea.Sequence(p.printError(err), promptReady)}
@@ -80,7 +82,7 @@ func (p *pgxCLI) execute(ctx context.Context, client *database.Client, query str
 		if okay {
 			start := time.Now()
 			p.logger.Debug("special command executed", "result_kind", metaResult.ResultKind())
-			result, quit, err := p.handleSpecialCommand(ctx, metaResult, client)
+			result, quit, err := p.handleSpecialCommand(ctx, metaResult, p.client)
 			if quit {
 				p.logger.Info("REPL exiting via quit command")
 				return ui.ExecCmdMsg{Cmd: tea.Quit}
@@ -110,7 +112,7 @@ func (p *pgxCLI) execute(ctx context.Context, client *database.Client, query str
 				continue
 			}
 
-			queryResult, err := client.ExecuteQuery(ctx, stmt)
+			queryResult, err := p.client.ExecuteQuery(ctx, stmt)
 			if err != nil {
 				p.logger.Error("query execution failed", "error", err)
 				cmds = append(cmds, p.printError(err))
@@ -136,12 +138,12 @@ func (p *pgxCLI) execute(ctx context.Context, client *database.Client, query str
 	}
 }
 
-func (p *pgxCLI) Start(ctx context.Context, client *database.Client) error {
+func (p *pgxCLI) Start(ctx context.Context) error {
 	executeFunc := func(query string) tea.Cmd {
-		return p.execute(ctx, client, query)
+		return p.execute(ctx, query)
 	}
 
-	initialPrefix := client.ParsePrompt(p.config.Main.Prompt)
+	initialPrefix := p.client.ParsePrompt(p.config.Main.Prompt)
 	m, err := ui.New(initialPrefix, p.completer.GetKeyWords(), p.config.Main.HistoryFile, string(p.config.Main.Style), executeFunc)
 	if err != nil {
 		return fmt.Errorf("creating UI model: %w", err)
@@ -221,6 +223,10 @@ func (p *pgxCLI) handleSpecialCommand(ctx context.Context, metaResult pgxspecial
 	default:
 		return "", false, nil
 	}
+}
+
+func (p *pgxCLI) cancel() error {
+	return nil
 }
 
 func (p *pgxCLI) handleQueryResult(r result.Result) (tea.Cmd, error) {
