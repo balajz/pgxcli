@@ -157,8 +157,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ inputs.tag_name }}
         run: |
+          # Re-extract release notes so gh doesn't wipe the body on edit
+          VERSION="${TAG_NAME#v}"
+          ESCAPED_VERSION=$(echo "$VERSION" | sed 's/\./\\./g')
+          awk "/^## \[${ESCAPED_VERSION}\]/{found=1; next} /^## \[/{if(found) exit} found{print}" \
+            CHANGELOG.md \
+            | sed -e '/./,$!d' -e ':a;/^\n*$/{$d;N;ba}' \
+            > /tmp/release_notes.md
+
           # upload MSI to the existing draft release
           gh release upload "$TAG_NAME" dist/*.msi
 
-          # now publish the draft
-          gh release edit "$TAG_NAME" --draft=false
+          # publish the draft, preserving the release body
+          gh release edit "$TAG_NAME" --draft=false --notes-file /tmp/release_notes.md
