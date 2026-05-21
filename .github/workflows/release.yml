@@ -110,12 +110,18 @@ jobs:
         run: |
           VERSION="${TAG_NAME#v}"   # strip the 'v' → 0.1.0
 
-          awk "/^## \[$VERSION\]/{found=1; next} /^## \[/{if(found) exit} found{print}" \
-            CHANGELOG.md > /tmp/release_notes.md
+          # Escape dots so awk treats them as literals, not regex wildcards
+          ESCAPED_VERSION=$(echo "$VERSION" | sed 's/\./\\./g')
+
+          awk "/^## \[${ESCAPED_VERSION}\]/{found=1; next} /^## \[/{if(found) exit} found{print}" \
+            CHANGELOG.md \
+            | sed -e '/./,$!d' -e ':a;/^\n*$/{$d;N;ba}' \
+            > /tmp/release_notes.md
 
           if [ ! -s /tmp/release_notes.md ]; then
-            echo "ERROR: No release notes found for $VERSION"
-            cat CHANGELOG.md
+            echo "ERROR: No release notes found for version $VERSION in CHANGELOG.md"
+            echo "Available versions:"
+            grep '^## \[' CHANGELOG.md
             exit 1
           fi
 
