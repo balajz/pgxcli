@@ -31,6 +31,7 @@ func (mc *MockConn) Ping(ctx context.Context) error {
 func (mc *MockConn) QueryRow(_ context.Context, _ string, _ ...any) pgx.Row { return nil }
 func (mc *MockConn) Close(_ context.Context) error                          { return nil }
 func (mc *MockConn) Config() *pgx.ConnConfig                                { return nil }
+func (mc *MockConn) PgConn() *pgconn.PgConn                                 { return nil }
 
 type MockRows struct {
 	mock.Mock
