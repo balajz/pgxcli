@@ -105,6 +105,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
+
+		case "enter":
+			if m.executing {
+				return m, nil
+			}
+			if sqlTerminationChecker(m.input.Value()) {
+				return m, editline.InputComplete
+			}
+
+			var cmd tea.Cmd
+			m.input, cmd = m.input.Update(msg)
+			return m, cmd
+
 		case "ctrl+c":
 			m.input.Reset()
 			if m.executing {
@@ -117,7 +130,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return nil
 				}
 			}
-
 			return m, nil
 		}
 	}
@@ -300,6 +312,17 @@ func applyEditlineConfig(el *editline.Model, historyFile string, pgKeywords []st
 
 	el.SetHistory(entries)
 	return nil
+}
+
+func sqlTerminationChecker(s string) bool {
+	trimmed := strings.TrimSpace(s)
+	if trimmed == "" {
+		return true
+	}
+	if strings.HasPrefix(trimmed, "\\") {
+		return true
+	}
+	return strings.HasSuffix(trimmed, ";")
 }
 
 func getHistoryFilePath() string {
