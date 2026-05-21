@@ -58,13 +58,14 @@ type Model struct {
 	prevUserInput string
 	historyFile   string
 	style         string
+	version       string
 
 	// execute executes a query passed and return as ExecCmdMsg + ReadyMsg.
 	execute execute
 	cancel  cancel
 }
 
-func New(initialPrefix string, pgKeywords []string, historyFile string, style string, executeFunc execute, cancelFunc cancel) (*Model, error) {
+func New(initialPrefix string, pgKeywords []string, historyFile string, style string, version string, executeFunc execute, cancelFunc cancel) (*Model, error) {
 	el := editline.New(0, 0)
 	el.Prompt = initialPrefix
 	if historyFile == "" || historyFile == config.Default {
@@ -79,13 +80,17 @@ func New(initialPrefix string, pgKeywords []string, historyFile string, style st
 		input:       el,
 		historyFile: historyFile,
 		style:       style,
+		version:     version,
 		execute:     executeFunc,
 		cancel:      cancelFunc,
 	}, nil
 }
 
 func (m *Model) Init() tea.Cmd {
-	return m.input.Focus()
+	return tea.Sequence(
+		BannerCmd(m.version),
+		m.input.Focus(),
+	)
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

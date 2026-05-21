@@ -12,11 +12,11 @@ import (
 
 	"github.com/balajz/pgxcli/internal/app"
 	"github.com/balajz/pgxcli/internal/app/renderer"
+	"github.com/balajz/pgxcli/internal/app/ui"
 	"github.com/balajz/pgxcli/internal/completer"
 	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balajz/pgxcli/internal/database"
 	"github.com/balajz/pgxcli/internal/logger"
-	"github.com/balajz/pgxcli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -77,10 +77,7 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 				cliCtx.Logger.Error("Application context not initialized")
 				return fmt.Errorf("application context not initialized")
 			}
-			if !bool(interactiveConnFlag) {
-				ui.PrintBanner(version)
-			}
-			return cliCtx.App.Start(ctx)
+			return cliCtx.App.Start(ctx, version)
 		},
 
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {

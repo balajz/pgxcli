@@ -6,14 +6,13 @@ import (
 	"os"
 	"strings"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/muesli/termenv"
 )
 
 //go:embed ascii.txt
 var asciiArt string
 
-// gradientColor computes an interpolated RGB color along a 3-stop gradient:
-// Pine (#3e8fb0) → Foam (#9ccfd8) → Iris (#c4a7e7), where t ∈ [0.0, 1.0].
 func gradientColor(t float64) (r, g, b int) {
 	type rgb = [3]float64
 	pine := rgb{62, 143, 176}
@@ -36,7 +35,6 @@ func gradientColor(t float64) (r, g, b int) {
 }
 
 func orcaStr(out *termenv.Output) string {
-	// Strip leading blank lines and trailing spaces per line.
 	lines := strings.Split(asciiArt, "\n")
 	for len(lines) > 0 && strings.TrimSpace(lines[0]) == "" {
 		lines = lines[1:]
@@ -56,7 +54,6 @@ func orcaStr(out *termenv.Output) string {
 			sb.WriteByte('\n')
 		}
 
-		// Compute gradient position for this line.
 		t := 0.0
 		if total > 1 {
 			t = float64(i) / float64(total-1)
@@ -72,19 +69,18 @@ func orcaStr(out *termenv.Output) string {
 	return sb.String()
 }
 
-// orcaView returns the colored orca art for use in TUI layouts.
 func orcaView() string {
 	return orcaStr(termenv.NewOutput(os.Stdout))
 }
 
-// PrintBanner prints the colored ASCII art banner and a welcome line.
-func PrintBanner(version string) {
+func BannerCmd(version string) tea.Cmd {
 	out := termenv.NewOutput(os.Stdout)
 	green := out.Color("#02BF87")
 
-	fmt.Print(orcaStr(out))
-	fmt.Printf("\n  %s  %s\n\n",
+	str := fmt.Sprintf("%s\n  %s  %s\n\n",
+		orcaStr(out),
 		out.String("pgxcli v"+version).Foreground(green).Bold().String(),
 		out.String("\\q to quit").Foreground(out.Color("240")).String(),
 	)
+	return tea.Printf("%s", str)
 }
