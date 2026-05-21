@@ -144,7 +144,14 @@ func (p *pgxCLI) Start(ctx context.Context) error {
 	}
 
 	initialPrefix := p.client.ParsePrompt(p.config.Main.Prompt)
-	m, err := ui.New(initialPrefix, p.completer.GetKeyWords(), p.config.Main.HistoryFile, string(p.config.Main.Style), executeFunc)
+	m, err := ui.New(
+		initialPrefix,
+		p.completer.GetKeyWords(),
+		p.config.Main.HistoryFile,
+		string(p.config.Main.Style),
+		executeFunc,
+		p.Cancel,
+	)
 	if err != nil {
 		return fmt.Errorf("creating UI model: %w", err)
 	}
@@ -225,8 +232,11 @@ func (p *pgxCLI) handleSpecialCommand(ctx context.Context, metaResult pgxspecial
 	}
 }
 
-func (p *pgxCLI) cancel() error {
-	return nil
+func (p *pgxCLI) Cancel(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	return p.client.Cancel(ctx)
 }
 
 func (p *pgxCLI) handleQueryResult(r result.Result) (tea.Cmd, error) {

@@ -39,6 +39,10 @@ type ReadyMsg struct{ Prefix string }
 // ExecCmdMsg is used to dispatch a batch/sequence of commands.
 type ExecCmdMsg struct{ Cmd tea.Cmd }
 
+type cancel func(ctx context.Context) error
+
+type execute func(query string) tea.Cmd
+
 type Model struct {
 	input         *editline.Model
 	width, height int
@@ -48,11 +52,11 @@ type Model struct {
 	style         string
 
 	// execute executes a query passed and return as ExecCmdMsg + ReadyMsg.
-	execute func(string) tea.Cmd
-	cancel  func(ctx context.Context) error
+	execute execute
+	cancel  cancel
 }
 
-func New(initialPrefix string, pgKeywords []string, historyFile string, style string, executeFunc func(string) tea.Cmd) (*Model, error) {
+func New(initialPrefix string, pgKeywords []string, historyFile string, style string, executeFunc execute, cancelFunc cancel) (*Model, error) {
 	el := editline.New(0, 0)
 	el.Prompt = initialPrefix
 	if historyFile == "" || historyFile == config.Default {
@@ -68,6 +72,7 @@ func New(initialPrefix string, pgKeywords []string, historyFile string, style st
 		historyFile: historyFile,
 		style:       style,
 		execute:     executeFunc,
+		cancel:      cancelFunc,
 	}, nil
 }
 
@@ -99,12 +104,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
-		if m.executing {
-			return m, nil
-		}
-
 		switch msg.String() {
 		case "ctrl+c":
+			if m.executing {
+				m.cancel(context.Background())
+				m.executing = false
+			}
+
 			m.input.Reset()
 			return m, nil
 		}
@@ -253,6 +259,33 @@ func applyEditlineConfig(el *editline.Model, historyFile string, pgKeywords []st
 		key.WithHelp("ctrl+e", "edit query in external editor"),
 	)
 	el.AutoComplete = postgresAutocomplete(pgKeywords)
+
+	// Configure multi-line input detection:
+	// A SQL query is only complete (submittable) if it is empty, starts with a backslash
+	// (special command), or ends with a semicolon ';'. Otherwise, Enter should just insert a newline.
+	el.CheckInputComplete = func(entireInput [][]rune, line, col int) bool {
+		var sb strings.Builder
+		for i, rline := range entireInput {
+			if i > 0 {
+				sb.WriteByte('\n')
+			}
+			sb.WriteString(string(rline))
+		}
+		input := strings.TrimSpace(sb.String())
+
+		// If input is empty, let it submit (no-op)
+		if input == "" {
+			return true
+		}
+
+		// If it's a special command (e.g. \clear, \d), it's single-line and complete
+		if strings.HasPrefix(input, "\\") {
+			return true
+		}
+
+		// Otherwise, a SQL statement is complete only if it ends with a semicolon
+		return strings.HasSuffix(input, ";")
+	}
 
 	entries, err := history.LoadHistory(historyFile)
 	if err != nil {
