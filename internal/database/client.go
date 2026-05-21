@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/balajz/pgxcli/internal/database/result"
 	"github.com/balaji01-4d/pgxspecial"
+	"github.com/balajz/pgxcli/internal/database/result"
 )
 
 const nilPlaceholder = "(nil)"
@@ -101,6 +101,13 @@ func (c *Client) ChangeDatabase(ctx context.Context, dbName string) error {
 	c.logger.Info("Database changed", "database", exec.Database)
 
 	return nil
+}
+
+func (c *Client) Cancel(ctx context.Context) error {
+	if !c.IsConnected() {
+		return ErrConnectionNotEstablished
+	}
+	return c.executor.cancel(ctx)
 }
 
 // ParsePrompt resolves prompt placeholders using current connection metadata.

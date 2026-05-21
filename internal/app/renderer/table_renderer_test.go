@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balaji01-4d/pgxspecial"
+	"github.com/balajz/pgxcli/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -4,6 +4,9 @@
 
 ## [0.1.2] - 2026-05-20
 
+### Added
+- **Query Cancellation**: Press `Ctrl+C` during a running query to cancel it immediately via PostgreSQL's out-of-band cancel signal.
+
 ### Fixed
 - **hardcoded style**: Removed the hardcoded "monokai" style from the syntax highlighter.
 

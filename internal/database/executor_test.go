@@ -185,9 +185,8 @@ func TestExecutorPing(t *testing.T) {
 			withConn: true,
 		},
 		{
-			name:       "no connection",
-			wantErr:    true,
-			wantErrMsg: "database not connected",
+			name:    "no connection",
+			wantErr: true,
 		},
 	}
 

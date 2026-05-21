@@ -2,15 +2,21 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
-	"github.com/balajz/pgxcli/internal/database/result"
 	"github.com/balaji01-4d/pgxspecial"
+	"github.com/balajz/pgxcli/internal/database/result"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+)
+
+var (
+	ErrConnectionClosed         = errors.New("connection closed unexpectedly")
+	ErrConnectionNotEstablished = errors.New("connection not established")
 )
 
 type conn interface {
@@ -18,6 +24,7 @@ type conn interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
 	Config() *pgx.ConnConfig
+	PgConn() *pgconn.PgConn
 	Ping(ctx context.Context) error
 	Close(ctx context.Context) error
 }
@@ -108,6 +115,13 @@ func (e *executor) executeSpecial(ctx context.Context, cmd string) (pgxspecial.S
 	return normalizedRows, ok, nil
 }
 
+func (e *executor) cancel(ctx context.Context) error {
+	if e.Conn == nil {
+		return ErrConnectionNotEstablished
+	}
+	return e.Conn.PgConn().CancelRequest(ctx)
+}
+
 func (e *executor) close(ctx context.Context) error {
 	if e.Conn != nil {
 		return e.Conn.Close(ctx)
@@ -117,7 +131,7 @@ func (e *executor) close(ctx context.Context) error {
 
 func (e *executor) ping(ctx context.Context) error {
 	if e.Conn == nil {
-		return fmt.Errorf("database not connected")
+		return ErrConnectionNotEstablished
 	}
 	return e.Conn.Ping(ctx)
 }
