@@ -7,7 +7,30 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/muesli/termenv"
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/term"
+)
+
+var issueLink = "https://github.com/balajz/pgxcli/issues"
+
+var (
+	primaryStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#8B5CF6")).
+			Bold(true)
+
+	secondaryStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#A78BFA"))
+
+	mutedStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#A1A1AA"))
+
+	accentStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#C4B5FD")).
+			Italic(true)
+
+	linkStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#7C3AED")).
+			Underline(true)
 )
 
 //go:embed ascii.txt
@@ -34,7 +57,7 @@ func gradientColor(t float64) (r, g, b int) {
 		int(lerp(c1[2], c2[2], t2))
 }
 
-func orcaStr(out *termenv.Output) string {
+func orcaStr() string {
 	lines := strings.Split(asciiArt, "\n")
 	for len(lines) > 0 && strings.TrimSpace(lines[0]) == "" {
 		lines = lines[1:]
@@ -59,28 +82,50 @@ func orcaStr(out *termenv.Output) string {
 			t = float64(i) / float64(total-1)
 		}
 		r, g, b := gradientColor(t)
-		lineCol := out.Color(fmt.Sprintf("#%02x%02x%02x", r, g, b))
+		hexColor := lipgloss.Color(fmt.Sprintf("#%02x%02x%02x", r, g, b))
+		style := lipgloss.NewStyle().Foreground(hexColor)
 
 		for _, ch := range line {
-			sb.WriteString(out.String(string(ch)).Foreground(lineCol).String())
+			sb.WriteString(style.Render(string(ch)))
 		}
 	}
 
 	return sb.String()
 }
 
-func orcaView() string {
-	return orcaStr(termenv.NewOutput(os.Stdout))
-}
-
 func BannerCmd(version string) tea.Cmd {
-	out := termenv.NewOutput(os.Stdout)
-	green := out.Color("#02BF87")
+	leftPane := orcaStr()
 
-	str := fmt.Sprintf("%s\n  %s  %s\n\n",
-		orcaStr(out),
-		out.String("pgxcli v"+version).Foreground(green).Bold().String(),
-		out.String("\\q to quit").Foreground(out.Color("240")).String(),
+	rightPane := lipgloss.JoinVertical(
+		lipgloss.Left,
+		secondaryStyle.Render("welcome to ")+
+			primaryStyle.Render("pgxcli ")+
+			mutedStyle.Render("v"+version),
+
+		accentStyle.Render("Happy Postgresing!"),
+
+		linkStyle.
+			Hyperlink(issueLink).
+			Render("Report Issues ↗"),
 	)
-	return tea.Printf("%s", str)
+
+	content := lipgloss.JoinHorizontal(
+		lipgloss.Center,
+		leftPane,
+		"      ", // gap between art and text
+		rightPane,
+	)
+
+	banner := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#8B5CF6")).
+		Padding(1, 4).
+		Render(content)
+
+	w, _, err := term.GetSize(os.Stdout.Fd())
+	if err == nil && w > 0 {
+		banner = lipgloss.Place(w, lipgloss.Height(banner), lipgloss.Center, lipgloss.Top, banner)
+	}
+
+	return tea.Printf("%s\n", banner)
 }

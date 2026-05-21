@@ -24,14 +24,22 @@ import (
 var chromaFormatter = detectTerminalColorProfile()
 
 var (
-	userInputStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#908CAA"))
-	appOutputStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#E0DEF4"))
-	errorOutputStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF6B6B"))
-	inputSeparatorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7b40a0")) // border for input
-	statusBarStyle      = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#908CAA")).
-				Background(lipgloss.Color("#2A273F")).
-				Padding(0, 1)
+	userInputStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#A78BFA"))
+
+	appOutputStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#C4B5FD"))
+
+	errorOutputStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#FF6B6B"))
+
+	inputSeparatorStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#8B5CF6"))
+
+	statusBarStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#C4B5FD")).
+			Background(lipgloss.Color("#2A273F")).
+			Padding(0, 1)
 )
 
 // ReadyMsg signals the ui that execution is done and it should prompt.
@@ -66,7 +74,7 @@ type Model struct {
 }
 
 func New(initialPrefix string, pgKeywords []string, historyFile string, style string, version string, executeFunc execute, cancelFunc cancel) (*Model, error) {
-	el := editline.New(0, 0)
+	el := editline.New(1, 1)
 	el.Prompt = initialPrefix
 	if historyFile == "" || historyFile == config.Default {
 		historyFile = getHistoryFilePath()
@@ -110,8 +118,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Prefix != "" {
 			m.input.Prompt = msg.Prefix
 		}
-
-		return m, nil
+		return m, m.input.Focus()
 
 	case ExecCmdMsg:
 		return m, msg.Cmd
@@ -192,6 +199,10 @@ func (m *Model) printUserInput(prefix, input string) tea.Cmd {
 
 func (m *Model) View() tea.View {
 	if m.quitting {
+		return tea.NewView("")
+	}
+	// Don't render until we know the terminal size.
+	if m.width == 0 {
 		return tea.NewView("")
 	}
 

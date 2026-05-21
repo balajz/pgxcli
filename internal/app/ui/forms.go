@@ -188,7 +188,7 @@ func (m *model) View() tea.View {
 		return view
 	default:
 		// Orca (left side)
-		orca := lipgloss.NewStyle().Margin(1, 4, 0, 0).Render(orcaView())
+		orca := lipgloss.NewStyle().Margin(1, 4, 0, 0).Render(orcaStr())
 
 		// Form card (right side)
 		v := strings.TrimSuffix(m.form.View(), "\n\n")
