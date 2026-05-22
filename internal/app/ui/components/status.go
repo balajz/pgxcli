@@ -11,13 +11,15 @@ import (
 type StatusModel struct {
 	Version        string
 	Width          int
+	IssueLink      string
 	SeparatorStyle lipgloss.Style
 	StatusBarStyle lipgloss.Style
 }
 
-func NewStatusModel(version string) StatusModel {
+func NewStatusModel(version, issueLink string) StatusModel {
 	return StatusModel{
-		Version: version,
+		Version:   version,
+		IssueLink: issueLink,
 	}
 }
 
@@ -39,8 +41,29 @@ func (m StatusModel) View() string {
 	if m.Width == 0 {
 		return ""
 	}
+
+	name := "pgxcli " + m.Version
+
+	link := m.StatusBarStyle.
+		Underline(true).
+		Hyperlink(m.IssueLink).
+		Render("Report Issue")
+
 	separator := m.SeparatorStyle.Render(strings.Repeat("─", m.Width))
-	statusBar := m.StatusBarStyle.Width(m.Width).Render("pgxcli " + m.Version)
+
+	innerWidth := m.Width - m.StatusBarStyle.GetHorizontalPadding()
+	if innerWidth < 0 {
+		innerWidth = 0
+	}
+
+	usedWidth := lipgloss.Width(name) + lipgloss.Width(link)
+	paddingWidth := innerWidth - usedWidth
+	if paddingWidth < 0 {
+		paddingWidth = 0
+	}
+	padding := strings.Repeat(" ", paddingWidth)
+
+	statusBar := m.StatusBarStyle.Width(m.Width).Render(name + padding + link)
 
 	return lipgloss.JoinVertical(
 		lipgloss.Top,

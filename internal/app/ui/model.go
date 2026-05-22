@@ -75,7 +75,7 @@ func New(initialPrefix string, pgKeywords []string, historyFile string, style st
 
 	styles := DefaultStyles()
 
-	statusModel := components.NewStatusModel(version)
+	statusModel := components.NewStatusModel(version, issueLink)
 	statusModel.SeparatorStyle = styles.InputSeparator
 	statusModel.StatusBarStyle = styles.StatusBar
 
