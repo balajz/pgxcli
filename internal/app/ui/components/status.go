@@ -53,7 +53,7 @@ func (m StatusModel) View() string {
 func (m StatusModel) StaticHeight() int {
 	separator := m.SeparatorStyle.Render(strings.Repeat("─", m.Width))
 	statusBar := m.StatusBarStyle.Width(m.Width).Render("pgxcli " + m.Version)
-	
+
 	// Top separator + Bottom separator + Status bar
 	return lipgloss.Height(separator)*2 + lipgloss.Height(statusBar)
 }

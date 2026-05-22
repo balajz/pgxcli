@@ -111,6 +111,7 @@ func (m *Model) Init() tea.Cmd {
 	)
 }
 
+//nolint:gocyclo
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.dump != nil {
 		spew.Fdump(m.dump, msg)
@@ -226,7 +227,7 @@ func (m *Model) printUserInput(prefix, input string) tea.Cmd {
 			highlightedInput = m.highlighter(input)
 		}
 
-		// used to seperate previous user input from the current one with half straight line.
+		// used to separate previous user input from the current one with half straight line.
 		line := strings.Repeat("─", m.width/2)
 
 		userContent := lipgloss.JoinHorizontal(lipgloss.Left, prefix, highlightedInput)
