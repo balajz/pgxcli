@@ -84,9 +84,7 @@ func orcaStr() string {
 		hexColor := lipgloss.Color(fmt.Sprintf("#%02x%02x%02x", r, g, b))
 		style := lipgloss.NewStyle().Foreground(hexColor)
 
-		for _, ch := range line {
-			sb.WriteString(style.Render(string(ch)))
-		}
+		sb.WriteString(style.Render(line))
 	}
 
 	return sb.String()
