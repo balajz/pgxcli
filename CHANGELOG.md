@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-22
+
+### Added
+- **Modernized UI**: Completely redesigned REPL interface with styles and better visual hierarchy.
+- **Orca Banner**: Colorful ASCII orca banner with gradient styling on startup.
+- **Report Issue link**: Clickable link in the status bar to report issues on GitHub and banner.
+- **Loading Spinner**: Visual spinner indicator that displays during query execution.
+
+### Fixed
+- **Version update**: Updated version string.
+- **fix interactive page**: fix the interactive page to show only form when width is lesser.
+
+### Refactored
+- **UI Component Architecture**: Extracted child components (Input, Status, Spinner) into separate modules for better maintainability.
+- **Style Management**: Separated style definitions into dedicated source files for cleaner organization.
+
 ## [0.1.2] - 2026-05-20
 
 ### Added
