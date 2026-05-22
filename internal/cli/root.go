@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	version = "0.1.1"
+	version = "0.2.0"
 	osUser  = osUsername()
 )
 
@@ -77,7 +77,7 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 				cliCtx.Logger.Error("Application context not initialized")
 				return fmt.Errorf("application context not initialized")
 			}
-			return cliCtx.App.Start(ctx, version)
+			return cliCtx.App.Start(ctx)
 		},
 
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {

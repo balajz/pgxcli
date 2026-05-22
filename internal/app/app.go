@@ -29,7 +29,7 @@ import (
 // Application defines the interface for the main application logic.
 type Application interface {
 	// Start starts the main repl loop, reading input, executing commands and printing results until the user exits.
-	Start(ctx context.Context, version string) error
+	Start(ctx context.Context) error
 
 	// Close performs saving history before exiting.
 	Close() error
@@ -143,7 +143,7 @@ func (p *pgxCLI) execute(ctx context.Context, query string) tea.Cmd {
 	}
 }
 
-func (p *pgxCLI) Start(ctx context.Context, version string) error {
+func (p *pgxCLI) Start(ctx context.Context) error {
 	p.printBanner(p.version)
 	executeFunc := func(query string) tea.Cmd {
 		return p.execute(ctx, query)
@@ -155,7 +155,7 @@ func (p *pgxCLI) Start(ctx context.Context, version string) error {
 		p.completer.GetKeyWords(),
 		p.config.Main.HistoryFile,
 		string(p.config.Main.Style),
-		version,
+		p.version,
 		executeFunc,
 		p.Cancel,
 	)
