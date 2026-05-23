@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/balaji01-4d/pgxspecial"
-	"github.com/balajz/pgxcli/internal/database/result"
 )
 
 const nilPlaceholder = "(nil)"
@@ -53,8 +52,8 @@ func (c *Client) ExecuteSpecial(ctx context.Context, command string) (pgxspecial
 }
 
 // ExecuteQuery runs SQL through the underlying executor and returns typed results.
-func (c *Client) ExecuteQuery(ctx context.Context, query string) (result.Result, error) {
-	return c.executor.execute(ctx, query)
+func (c *Client) ExecuteQuery(ctx context.Context, query string, isMulti bool) (Rows, bool, error) {
+	return c.executor.execute(ctx, query, isMulti)
 }
 
 // IsConnected reports whether the client currently has an active connection.
@@ -73,7 +72,7 @@ func (c *Client) ChangeDatabase(ctx context.Context, dbName string) error {
 		return fmt.Errorf("database name is required")
 	}
 
-	connConfig := c.executor.Conn.Config().Copy()
+	connConfig := c.executor.conn.Config().Copy()
 	connConfig.Database = dbName
 
 	connector := &pgConnector{cfg: connConfig}

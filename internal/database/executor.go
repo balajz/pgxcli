@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/balaji01-4d/pgxspecial"
 	"github.com/balajz/pgxcli/internal/database/result"
@@ -26,7 +25,7 @@ type executor struct {
 	User      string
 	Password  string
 	URI       string
-	Conn      *pgx.Conn
+	conn      *pgx.Conn
 	Connector Connector
 
 	Logger *slog.Logger
@@ -55,14 +54,14 @@ func newExecutor(ctx context.Context, c Connector, logger *slog.Logger) (*execut
 		User:      conn.Config().User,
 		Password:  conn.Config().Password,
 		URI:       conn.Config().ConnString(),
-		Conn:      conn,
+		conn:      conn,
 		Connector: c,
 		Logger:    logger,
 	}, nil
 }
 
 func (e *executor) ensureConn(ctx context.Context) error {
-	if e.Conn != nil && !e.Conn.IsClosed() {
+	if e.conn != nil && !e.conn.IsClosed() {
 		return nil
 	}
 
@@ -70,41 +69,57 @@ func (e *executor) ensureConn(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	e.Conn = conn
+	e.conn = conn
 	return nil
 }
 
 // For executing queries like SELECT, SHOW etc.
-func (e *executor) query(ctx context.Context, sql string, args ...any) (result.Result, error) {
+func (e *executor) query(ctx context.Context, sql string, isMulti bool, args ...any) (Rows, bool, error) {
 	if err := e.ensureConn(ctx); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	e.Logger.Debug("Executing query", "sql", sql)
-	start := time.Now()
-	rows, err := e.Conn.Query(ctx, sql, args...)
+	if isMulti {
+		mrr := e.conn.PgConn().Exec(ctx, sql)
+		if e.conn.IsClosed() {
+			mrr.Close()
+			return nil, false, ErrConnectionClosed
+		}
+
+		rs := &sqlRowsMultiResultSet{
+			rows:    mrr,
+			typeMap: e.conn.TypeMap(),
+			exec:    e,
+		}
+		return rs, true, nil
+	}
+
+	rows, err := e.conn.Query(ctx, sql, args...)
 	if err != nil {
-		if e.Conn.IsClosed() {
-			return nil, ErrConnectionClosed
+		if e.conn.IsClosed() {
+			return nil, false, ErrConnectionClosed
 		}
 		e.Logger.Error("Query failed", "error", err, "sql", sql)
-		return nil, err
+		return nil, false, err
 	}
-	dur := time.Since(start)
 
-	e.Logger.Info("Query completed", "duration_ms", dur.Milliseconds())
-	return result.NewQuery(rows, dur), nil
+	return &sqlRows{
+		rows:    rows,
+		typeMap: e.conn.TypeMap(),
+		exec:    e,
+	}, false, nil
 }
 
 // execute determines whether to run query or exec based on SQL type.
-func (e *executor) execute(ctx context.Context, sql string, args ...any) (result.Result, error) {
-	return e.query(ctx, sql, args...)
+func (e *executor) execute(ctx context.Context, sql string, isMulti bool, args ...any) (Rows, bool, error) {
+	return e.query(ctx, sql, isMulti, args...)
 }
 
 func (e *executor) executeSpecial(ctx context.Context, cmd string) (pgxspecial.SpecialCommandResult, bool, error) {
 	if err := e.ensureConn(ctx); err != nil {
 		return nil, false, err
 	}
-	specialResult, ok, err := pgxspecial.ExecuteSpecialCommand(ctx, e.Conn, cmd)
+	specialResult, ok, err := pgxspecial.ExecuteSpecialCommand(ctx, e.conn, cmd)
 	if err != nil {
 		e.Logger.Error("Special command execution failed", "error", err, "command", cmd)
 		return nil, ok, err
@@ -129,15 +144,15 @@ func (e *executor) executeSpecial(ctx context.Context, cmd string) (pgxspecial.S
 }
 
 func (e *executor) cancel(ctx context.Context) error {
-	if e.Conn == nil || e.Conn.IsClosed() {
+	if e.conn == nil || e.conn.IsClosed() {
 		return ErrConnectionNotEstablished
 	}
-	return e.Conn.PgConn().CancelRequest(ctx)
+	return e.conn.PgConn().CancelRequest(ctx)
 }
 
 func (e *executor) close(ctx context.Context) error {
-	if e.Conn != nil && !e.Conn.IsClosed() {
-		return e.Conn.Close(ctx)
+	if e.conn != nil && !e.conn.IsClosed() {
+		return e.conn.Close(ctx)
 	}
 	return nil
 }
@@ -146,9 +161,9 @@ func (e *executor) ping(ctx context.Context) error {
 	if err := e.ensureConn(ctx); err != nil {
 		return err
 	}
-	return e.Conn.Ping(ctx)
+	return e.conn.Ping(ctx)
 }
 
 func (e *executor) isConnected() bool {
-	return e.Conn != nil && !e.Conn.IsClosed()
+	return e.conn != nil && !e.conn.IsClosed()
 }

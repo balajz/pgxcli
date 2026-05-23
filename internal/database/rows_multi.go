@@ -74,7 +74,7 @@ func (r *sqlRowsMultiResultSet) Next(values []driver.Value) error {
 	}
 	if len(rd.FieldDescriptions()) != len(values) {
 		return fmt.Errorf("number of field descriptions must equal number of destinations, got %d and %d",
-	len(rd.FieldDescriptions()), len(values))
+			len(rd.FieldDescriptions()), len(values))
 	}
 	for i := range values {
 		rowVal := rd.Values()[i]
