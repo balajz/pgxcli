@@ -11,7 +11,7 @@
 <br />
 <div align="center">
   <a href="https://pgxcli.vercel.app/">
-    <img src="https://res.cloudinary.com/dsdupsv2g/image/upload/q_auto/f_auto/v1777298704/1_oepvrn.png" alt="pgxcli banner" width="100%"/>
+    <img src="https://res.cloudinary.com/dsdupsv2g/image/upload/q_auto/f_auto/v1779504361/home_lrj6gh.png" width="100%"/>
   </a>
   <h1 align="center">pgxcli</h1>
   <p align="center">
