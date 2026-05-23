@@ -1,0 +1,93 @@
+---
+title: pgxcli vs pgcli
+description: How pgxcli compares with the popular pgcli tool.
+keywords: [pgxcli vs pgcli, postgresql client comparison, pgcli alternative, best postgres cli]
+sidebar_position: 2
+---
+
+import { MdCheckCircle, MdOutlineWatchLater, MdPauseCircle, MdCancel } from 'react-icons/md';
+
+export const Check = () => <MdCheckCircle style={{color: '#22c55e', verticalAlign: 'text-bottom', fontSize: '1.25rem'}} />;
+export const Wait = () => <MdOutlineWatchLater style={{color: '#3b82f6', verticalAlign: 'text-bottom', fontSize: '1.25rem'}} />;
+export const Deferred = () => <MdPauseCircle style={{color: '#a855f7', verticalAlign: 'text-bottom', fontSize: '1.25rem'}} />;
+export const OutOfScope = () => <MdCancel style={{color: '#ef4444', verticalAlign: 'text-bottom', fontSize: '1.25rem'}} />;
+
+export const GoLogo = () => <img src="https://go.dev/images/go-logo-white.svg" alt="Go" style={{height: '1.1rem', verticalAlign: 'text-bottom', display: 'inline'}} />;
+export const PythonLogo = () => <img src="https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/community/logos/python-logo-only.png" alt="Python" style={{height: '1.1rem', verticalAlign: 'text-bottom', display: 'inline'}} />;
+
+[pgcli](https://github.com/dbcli/pgcli) is a mature PostgreSQL CLI developed over many years, which has set the standard for interactive PostgreSQL clients.
+
+**pgxcli** takes the simpler approach, focusing on speed and minmal setup. It is a singe Go binary with fast startup and TOML configuration. If you need a lightweight, It may be good fit. for a more feature-rich, established experience, pgcli remains the benchmark.
+
+### Where pgxcli stands out:
+
+#### Now
+- **Single binary:** No external runtime dependencies (like Python).
+- **Performance:** Fast startup and better overall performance.
+
+#### Planned
+- **Modern CLI Interface:** Enhanced user experience.
+- **Streaming query results:** Better handling of large tables.
+- **Browser-based Table view:** View results via localhost.
+- **Direct Table export:** Export to SQL INSERT, CSV, MD tables, Excel, and HTML.
+
+---
+
+## Which one should I use?
+
+Right now, I would definitely choose pgcli. I think no explanation is needed.
+
+That could change as pgxcli matures. I would really appreciate if you give pgxcli a try and share your feedback. If you want to contribute, that would be even better.
+
+---
+
+## Feature Comparison Matrix
+
+| Category | Feature | pgcli (Python) | pgxcli (Go, v0.1.1) | Status |
+|---|---|---|---|---|
+| **TL;DR** | **Overall** | **Feature-rich, mature** | **Fast, simple, single-binary** | **-** |
+| **SQL Editing** | Multi-line mode | <Check /> | <Wait /> | Roadmap v0.2.0 |
+| | External editor | <Check /> | <Check /> (Ctrl+E) | Stable |
+| | Vi/Emacs toggle | <Check /> | <OutOfScope /> | Out of scope |
+| **Completion** | Keyword completion | <Check /> | <Check /> | Stable |
+| | Schema-aware completion | <Check /> | <Wait /> | Roadmap v0.2.0 |
+| **Output** | Pager support | <Check /> | <Check /> | Stable |
+| | Table formatting | <Check /> | <Check /> | Stable |
+| | Colored output + themes | <Check /> | <Check /> | Stable |
+| | Syntax highlighting | <Check /> | <Check /> (rich) | Stable |
+| **Commands** | Backslash meta-commands | <Check /> | <Check /> | Stable Expanding |
+| | Built-in commands | <Check /> | <Check /> (clear) | Expanding |
+| **History** | Persistent history | <Check /> | <Check /> | Stable |
+| | History based completion | <Check /> | <Wait /> | Roadmap |
+| **Connection** | Standard flags | <Check /> | <Check /> | Stable |
+| | DSN/URI support | <Check /> | <Check /> | Stable |
+| | Environment variables | <Check /> | <Check /> | Stable |
+| | SSH tunnels | <Check /> | <Wait /> | Roadmap |
+| **Security** | Keyring integration | <Check /> | <Wait /> | Roadmap |
+| **Execution** | Multi-statement | <Check /> | <Check /> | Stable |
+| | Explain mode | <Check /> | <Wait /> | Roadmap |
+| | Timing display | <Check /> | <Check /> | Stable |
+| **Config** | Auto-created config | <Check /> | <Check /> | Stable |
+| | Config format | INI | TOML | Different approach |
+| **UI** | Status toolbar | <Check /> | <Deferred /> | Deferred |
+
+**Legend:** <Check /> Available &nbsp; <Wait /> Planned &nbsp; <Deferred /> Deferred &nbsp; <OutOfScope /> Out of scope
+
+---
+
+## Tech Stack Comparison
+
+| Category | <PythonLogo /> [dbcli/pgcli](https://github.com/dbcli/pgcli) | <GoLogo /> [Balaji01-4D/pgxcli](https://github.com/Balaji01-4D/pgxcli) |
+|---|---|---|
+| **Language** | [Python](https://www.python.org/) | [Go](https://go.dev/) |
+| **Postgres Driver** | [psycopg](https://www.psycopg.org/) | [jackc/pgx](https://github.com/jackc/pgx) |
+| **CLI Framework** | [click](https://click.palletsprojects.com/) | [spf13/cobra](https://github.com/spf13/cobra) |
+| **Interactive Prompt** | [prompt-toolkit](https://python-prompt-toolkit.readthedocs.io/) | [jedib0t/go-prompter](https://github.com/jedib0t/go-prompter) |
+| **Configuration** | [configobj](https://github.com/DiffSK/configobj) | [spf13/viper](https://github.com/spf13/viper) |
+| **SQL Parser** | [sqlparse](https://github.com/andialbrecht/sqlparse) | Custom Splitter |
+| **Tabular Output** | [tabulate](https://github.com/astanin/python-tabulate) | [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter) |
+| **Testing** | [pytest](https://docs.pytest.org/) | [stretchr/testify](https://github.com/stretchr/testify) |
+
+---
+
+*Note: The feature comparison above reflects our understanding at the time of writing. As pgcli is an actively maintained project, we recommend checking the [official pgcli documentation](https://www.pgcli.com/) for the most up-to-date information on its features.*

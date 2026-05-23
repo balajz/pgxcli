@@ -1,0 +1,35 @@
+{
+  "id": "guides/configuration",
+  "title": "Configuration",
+  "description": "Customize pgxcli with a simple TOML config file.",
+  "source": "@site/docs/guides/configuration.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/configuration",
+  "permalink": "/docs/guides/configuration",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "title": "Configuration",
+    "description": "Customize pgxcli with a simple TOML config file.",
+    "keywords": [
+      "pgxcli config",
+      "toml configuration",
+      "postgres theme",
+      "psql pager",
+      "syntax highlighting theme"
+    ],
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Features",
+    "permalink": "/docs/guides/features"
+  },
+  "next": {
+    "title": "Special Commands",
+    "permalink": "/docs/guides/special-commands"
+  }
+}

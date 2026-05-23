@@ -1,0 +1,12 @@
+{
+  "type": "mdx",
+  "permalink": "/support",
+  "source": "@site/src/pages/support.md",
+  "title": "Support My Work",
+  "description": "Help keep pgxcli growing — star the repo, buy a coffee, or just spread the word.",
+  "frontMatter": {
+    "title": "Support My Work",
+    "description": "Help keep pgxcli growing — star the repo, buy a coffee, or just spread the word."
+  },
+  "unlisted": false
+}

@@ -1,0 +1,35 @@
+{
+  "id": "guides/features",
+  "title": "Features",
+  "description": "An overview of what pgxcli brings to your PostgreSQL workflow.",
+  "source": "@site/docs/guides/features.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/features",
+  "permalink": "/docs/guides/features",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "title": "Features",
+    "description": "An overview of what pgxcli brings to your PostgreSQL workflow.",
+    "keywords": [
+      "postgresql syntax highlighting",
+      "sql autocompletion",
+      "psql features",
+      "postgres auto complete",
+      "chroma"
+    ],
+    "sidebar_position": 6
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Connecting",
+    "permalink": "/docs/guides/connecting"
+  },
+  "next": {
+    "title": "Configuration",
+    "permalink": "/docs/guides/configuration"
+  }
+}

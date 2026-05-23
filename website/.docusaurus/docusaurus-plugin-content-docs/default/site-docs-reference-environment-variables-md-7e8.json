@@ -1,0 +1,32 @@
+{
+  "id": "reference/environment-variables",
+  "title": "Environment Variables",
+  "description": "Environment variables that pgxcli reads for connection defaults and configuration.",
+  "source": "@site/docs/reference/environment-variables.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/environment-variables",
+  "permalink": "/docs/reference/environment-variables",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "title": "Environment Variables",
+    "description": "Environment variables that pgxcli reads for connection defaults and configuration.",
+    "keywords": [
+      "postgres environment variables",
+      "PGPASSWORD",
+      "PGUSER",
+      "libpq env",
+      "PGHOST",
+      "PGDATABASE"
+    ],
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "CLI Flags",
+    "permalink": "/docs/reference/cli-reference"
+  }
+}

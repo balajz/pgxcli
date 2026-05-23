@@ -1,0 +1,68 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/docs",
+          "mainDocId": "guides/getting-started",
+          "docs": [
+            {
+              "id": "guides/comparison-with-pgcli",
+              "path": "/docs/guides/comparison-with-pgcli",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/configuration",
+              "path": "/docs/guides/configuration",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/connecting",
+              "path": "/docs/guides/connecting",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/features",
+              "path": "/docs/guides/features",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/getting-started",
+              "path": "/docs/guides/getting-started",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/special-commands",
+              "path": "/docs/guides/special-commands",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "reference/cli-reference",
+              "path": "/docs/reference/cli-reference",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "reference/environment-variables",
+              "path": "/docs/reference/environment-variables",
+              "sidebar": "docsSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docsSidebar": {
+              "link": {
+                "path": "/docs/guides/getting-started",
+                "label": "Getting Started"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

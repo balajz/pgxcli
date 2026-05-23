@@ -1,0 +1,35 @@
+{
+  "id": "guides/special-commands",
+  "title": "Special Commands",
+  "description": "Backslash commands and built-in commands available inside the pgxcli REPL.",
+  "source": "@site/docs/guides/special-commands.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/special-commands",
+  "permalink": "/docs/guides/special-commands",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "title": "Special Commands",
+    "description": "Backslash commands and built-in commands available inside the pgxcli REPL.",
+    "keywords": [
+      "psql backslash commands",
+      "list tables postgres",
+      "describe table postgres",
+      "psql commands",
+      "session commands"
+    ],
+    "sidebar_position": 5
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Configuration",
+    "permalink": "/docs/guides/configuration"
+  },
+  "next": {
+    "title": "CLI Flags",
+    "permalink": "/docs/reference/cli-reference"
+  }
+}

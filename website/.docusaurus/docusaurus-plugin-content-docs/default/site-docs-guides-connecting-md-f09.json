@@ -1,0 +1,35 @@
+{
+  "id": "guides/connecting",
+  "title": "Connecting",
+  "description": "Every way to connect pgxcli to a PostgreSQL database.",
+  "source": "@site/docs/guides/connecting.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/connecting",
+  "permalink": "/docs/guides/connecting",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "title": "Connecting",
+    "description": "Every way to connect pgxcli to a PostgreSQL database.",
+    "keywords": [
+      "connect to postgres",
+      "psql connection string",
+      "pgxcli login",
+      "postgres connection form",
+      "database url"
+    ],
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "pgxcli vs pgcli",
+    "permalink": "/docs/guides/comparison-with-pgcli"
+  },
+  "next": {
+    "title": "Features",
+    "permalink": "/docs/guides/features"
+  }
+}
