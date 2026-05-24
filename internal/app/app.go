@@ -22,7 +22,6 @@ import (
 	"github.com/balajz/pgxcli/internal/completer"
 	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balajz/pgxcli/internal/database"
-	"github.com/balajz/pgxcli/internal/database/result"
 	"github.com/balajz/pgxcli/internal/parser"
 )
 
@@ -117,7 +116,9 @@ func (p *pgxCLI) execute(ctx context.Context, query string) tea.Cmd {
 				continue
 			}
 
-			queryResult, err := p.client.ExecuteQuery(ctx, stmt)
+			start := time.Now()
+			queryResult, _, err := p.client.ExecuteQuery(ctx, stmt, false)
+			execDuration := time.Since(start)
 			if err != nil {
 				p.logger.Error("query execution failed", "error", err)
 				cmds = append(cmds, p.printError(err))
@@ -126,7 +127,7 @@ func (p *pgxCLI) execute(ctx context.Context, query string) tea.Cmd {
 				}
 				continue
 			}
-			resultCmd, err := p.handleQueryResult(queryResult)
+			resultCmd, err := p.handleQueryResult(queryResult, execDuration)
 			if err != nil {
 				p.logger.Error("error handling query result", "error", err)
 				cmds = append(cmds, p.printError(err))
@@ -248,31 +249,6 @@ func (p *pgxCLI) Cancel(ctx context.Context) error {
 
 func (p *pgxCLI) printBanner(version string) {
 	lipgloss.Fprint(os.Stdout, ui.Banner(version)+"\n")
-}
-
-func (p *pgxCLI) handleQueryResult(r result.Result) (tea.Cmd, error) {
-	res, ok := r.(*result.QueryResult)
-	if !ok {
-		return nil, fmt.Errorf("unsupported query result type: %T", r)
-	}
-
-	var s strings.Builder
-	if err := renderer.Table(res, &s, p.config); err != nil {
-		return nil, err
-	}
-
-	output := s.String()
-	if len(res.Columns()) == 0 {
-		output = res.CommandTag()
-	} else {
-		output += res.CommandTag()
-	}
-
-	// Append timing info to the output
-	timingInfo := fmt.Sprintf("\nTime %.3fs", res.Duration().Seconds())
-	output += timingInfo
-
-	return p.printViaPager(output), nil
 }
 
 func (p *pgxCLI) printViaPager(str string) tea.Cmd {
