@@ -136,7 +136,22 @@ jobs:
       - name: Run GoReleaser (creates draft)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goreleaser release --clean --fail-fast --release-notes /tmp/release_notes.md
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          # Set up docker buildx for multi-arch builds
+          docker buildx create --name=goreleaser --use
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          
+          # Log in to GitHub Container Registry
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Log in to Docker Hub (if secrets are provided)
+          if [ -n "$DOCKER_USERNAME" ] && [ -n "$DOCKER_PASSWORD" ]; then
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          fi
+          
+          goreleaser release --clean --fail-fast --release-notes /tmp/release_notes.md
 
   # ── Job 3: Upload MSI to draft + publish ─────────────────────────────
   publish:

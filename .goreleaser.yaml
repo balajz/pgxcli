@@ -100,3 +100,34 @@ checksum:
 
 changelog:
   disable: true
+
+aurs:
+  - name: pgxcli-bin
+    homepage: "https://github.com/balajz/pgxcli"
+    description: "An interactive PostgreSQL CLI written in Go"
+    maintainers:
+      - "Balaji J <balaji.jothi.in@gmail.com>"
+    license: "MIT"
+    private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/pgxcli-bin.git"
+    provides:
+      - pgxcli
+    conflicts:
+      - pgxcli
+    package: |-
+      # bin
+      install -Dm755 "./pgxcli" "${pkgdir}/usr/bin/pgxcli"
+
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/pgxcli/LICENSE"
+
+dockers_v2:
+  - images:
+      - "ghcr.io/balajz/pgxcli"
+      - "balajz/pgxcli"
+    tags:
+      - "latest"
+      - "v{{ .Version }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
