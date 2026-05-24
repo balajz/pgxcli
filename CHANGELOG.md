@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-24
+
+## Credits: CockroachDB for code references.
+
+### Refactored
+- **Removed custom results** Removed the custom results and switch to the database/Rows interface for scalability and maintainability, helps to supports future features like streaming results and exporting results.
+
+
 ## [0.2.0] - 2026-05-22
 
 ### Added
