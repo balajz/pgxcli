@@ -115,6 +115,9 @@ aurs:
     conflicts:
       - pgxcli
     package: |-
+      # navigate into the extracted archive directory
+      cd pgxcli_*
+
       # bin
       install -Dm755 "./pgxcli" "${pkgdir}/usr/bin/pgxcli"
 
