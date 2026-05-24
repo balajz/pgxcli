@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // Connector describes how the client obtains and updates a database connection.
@@ -78,5 +79,23 @@ func (c *pgConnector) Connect(ctx context.Context) (*pgx.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	conn.TypeMap().RegisterTypes(customTypes())
+
 	return conn, nil
+}
+
+func customTypes() []*pgtype.Type {
+	return []*pgtype.Type{
+		{
+			Name:  "json",
+			OID:   pgtype.JSONOID,
+			Codec: &pgtype.TextCodec{},
+		},
+		{
+			Name:  "jsonb",
+			OID:   pgtype.JSONBOID,
+			Codec: &pgtype.TextCodec{},
+		},
+	}
 }
