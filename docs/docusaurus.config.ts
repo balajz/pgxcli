@@ -111,7 +111,7 @@ const config: Config = {
         },
         {
           type: 'custom-Github',
-          href: 'https://github.com/balaji01-4d/pgxcli',
+          href: 'https://github.com/balajz/pgxcli',
           position: 'right',
         },
       ],

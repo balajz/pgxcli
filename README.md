@@ -175,4 +175,4 @@ Thank you for being part of the community! 🙌
 [cobra-url]: https://github.com/spf13/cobra
 [viper-url]: https://github.com/spf13/viper
 [pgcli-url]: https://github.com/dbcli/pgcli
-[releases-url]: https://github.com/Balaji01-4D/pgxcli/releases
+[releases-url]: https://github.com/balajz/pgxcli/releases

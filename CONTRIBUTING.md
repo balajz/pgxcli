@@ -20,7 +20,7 @@ First off — thank you for being here. Whether you're fixing a typo, reporting 
 
 GitHub Issues are for bugs and feature requests only — not questions. If you're unsure whether something is a bug, start a Discussion first.
 
-- Open a [GitHub Discussion](https://github.com/Balaji01-4D/pgxcli/discussions) for Q&A, ideas, and general conversation.
+- Open a [GitHub Discussion](https://github.com/balajz/pgxcli/discussions) for Q&A, ideas, and general conversation.
 - Check the [docs](https://pgxcli.vercel.app/) — configuration, CLI reference, and guides live there.
 
 ## What Should I Know Before Getting Started?
@@ -58,7 +58,7 @@ pgxcli is a single Go binary — a PostgreSQL REPL built for speed and a smooth 
 
 Before opening a bug report:
 
-- Check [existing issues](https://github.com/Balaji01-4D/pgxcli/issues) — if the bug is already reported and still open, leave a comment there instead of opening a new one.
+- Check [existing issues](https://github.com/balajz/pgxcli/issues) — if the bug is already reported and still open, leave a comment there instead of opening a new one.
 - Try to reproduce the issue on the latest release.
 
 When filing a bug, please include:
@@ -70,13 +70,13 @@ When filing a bug, please include:
 - **Relevant config** from `~/.config/pgxcli/config.toml`, if applicable.
 - **A stack trace or terminal output**, pasted in a fenced code block.
 
-Please use the [bug report template](https://github.com/Balaji01-4D/pgxcli/issues/new?template=bug_report.md) when available.
+Please use the [bug report template](https://github.com/balajz/pgxcli/issues/new?template=bug_report.md) when available.
 
 ### Suggesting Enhancements
 
 Feature ideas are welcome. Before submitting one:
 
-- Search [existing issues and discussions](https://github.com/Balaji01-4D/pgxcli/issues) to avoid duplicates.
+- Search [existing issues and discussions](https://github.com/balajz/pgxcli/issues) to avoid duplicates.
 - Check the [roadmap](#roadmap--what-to-work-on) — it might already be planned.
 
 A good enhancement request includes:
@@ -86,14 +86,14 @@ A good enhancement request includes:
 - **Alternatives you've considered**, and why this approach is better.
 - **Examples from other tools**, if relevant (psql, pgcli, usql, etc.).
 
-Please use the [feature request template](https://github.com/Balaji01-4D/pgxcli/issues/new?template=feature_request.md) when available.
+Please use the [feature request template](https://github.com/balajz/pgxcli/issues/new?template=feature_request.md) when available.
 
 ### Your First Code Contribution
 
 Not sure where to start? Look for issues tagged:
 
-- [`good first issue`](https://github.com/Balaji01-4D/pgxcli/labels/good%20first%20issue) — small, well-scoped, good for getting familiar with the codebase.
-- [`help wanted`](https://github.com/Balaji01-4D/pgxcli/labels/help%20wanted) — meaningful contributions that don't require deep context.
+- [`good first issue`](https://github.com/balajz/pgxcli/labels/good%20first%20issue) — small, well-scoped, good for getting familiar with the codebase.
+- [`help wanted`](https://github.com/balajz/pgxcli/labels/help%20wanted) — meaningful contributions that don't require deep context.
 
 Issues are sorted by comment count as a rough proxy for impact.
 

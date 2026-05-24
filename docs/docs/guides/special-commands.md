@@ -44,7 +44,7 @@ You are connected to database "mydb" as user "postgres" on Host "localhost" at p
 
 ## Catalog Commands
 
-These come from the [pgxspecial](https://github.com/balaji01-4d/pgxspecial) library and work like their `psql` equivalents:
+These come from the [pgxspecial](https://github.com/balajz/pgxspecial) library and work like their `psql` equivalents:
 
 | Command | Description |
 |---------|-------------|

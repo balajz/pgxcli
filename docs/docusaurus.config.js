@@ -104,7 +104,7 @@ const config = {
                     position: 'right',
                 },
                 {
-                    href: 'https://github.com/balaji01-4d/pgxcli',
+                    href: 'https://github.com/balajz/pgxcli',
                     label: 'GitHub',
                     position: 'right',
                 },

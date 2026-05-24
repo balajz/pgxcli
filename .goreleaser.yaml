@@ -10,7 +10,7 @@ release:
   header: |
     # pgxcli {{.Version}}
   footer: |
-    **Full Changelog**: https://github.com/Balaji01-4D/pgxcli/blob/main/CHANGELOG.md
+    **Full Changelog**: https://github.com/balajz/pgxcli/blob/main/CHANGELOG.md
 
 before:
   hooks:
@@ -86,7 +86,7 @@ nfpms:
     vendor: "Balaji J"
     maintainer: "Balaji J <balaji.jothi.in@gmail.com>"
     description: "An interactive PostgreSQL CLI written in Go"
-    homepage: "https://github.com/Balaji01-4D/pgxcli"
+    homepage: "https://github.com/balajz/pgxcli"
     license: "MIT"
     bindir: /usr/bin
     formats:

@@ -6,7 +6,7 @@ export default function GithubNavbarItem({ href, ...props }) {
 
   useEffect(() => {
     // Fetch repo data
-    fetch('https://api.github.com/repos/balaji01-4d/pgxcli')
+    fetch('https://api.github.com/repos/balajz/pgxcli')
       .then(res => res.json())
       .then(data => {
         if (data.stargazers_count !== undefined) {
@@ -15,7 +15,7 @@ export default function GithubNavbarItem({ href, ...props }) {
       })
       .catch(console.error);
 
-    fetch('https://api.github.com/repos/balaji01-4d/pgxcli/releases/latest')
+    fetch('https://api.github.com/repos/balajz/pgxcli/releases/latest')
       .then(res => res.json())
       .then(data => {
         if (data.tag_name) {

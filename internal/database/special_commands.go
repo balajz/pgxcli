@@ -3,10 +3,10 @@ package database
 import (
 	"context"
 
-	"github.com/balaji01-4d/pgxspecial"
-	"github.com/balaji01-4d/pgxspecial/database"
+	"github.com/balajz/pgxcli/pgxspecial"
+	"github.com/balajz/pgxcli/pgxspecial/database"
 	// Register built-in pgxspecial commands via package init side effects.
-	_ "github.com/balaji01-4d/pgxspecial/dbcommands"
+	_ "github.com/balajz/pgxcli/pgxspecial/dbcommands"
 )
 
 const (

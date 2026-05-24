@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/balaji01-4d/pgxspecial"
+	"github.com/balajz/pgxcli/pgxspecial"
 )
 
 const nilPlaceholder = "(nil)"

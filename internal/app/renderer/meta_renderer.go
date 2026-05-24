@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/balaji01-4d/pgxspecial"
 	"github.com/balajz/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/pgxspecial"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/renderer"

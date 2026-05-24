@@ -42,7 +42,7 @@ internal/logger/          → slog-based file logger
 
 ### Special commands
 
-`\d`, `\l`, `\dt`, `\q`, `\c`, `\conninfo` etc. are handled by the external `pgxspecial` package (`github.com/balaji01-4d/pgxspecial`). `database.executor.executeSpecial` wraps it; rows are materialized into `result.SpecialRow` before being handed back to the REPL.
+`\d`, `\l`, `\dt`, `\q`, `\c`, `\conninfo` etc. are handled by the external `pgxspecial` package (`github.com/balajz/pgxspecial`). `database.executor.executeSpecial` wraps it; rows are materialized into `result.SpecialRow` before being handed back to the REPL.
 
 ### Configuration
 

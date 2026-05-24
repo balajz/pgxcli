@@ -13,10 +13,10 @@ If you find pgxcli useful and want to help me keep improving it, your support me
 
 ### ⭐ Star on GitHub
 
-Show some love by starring the [pgxcli repo](https://github.com/Balaji01-4D/pgxcli)!
+Show some love by starring the [pgxcli repo](https://github.com/balajz/pgxcli)!
 Every star gives me a huge dopamine hit and motivates me to build even better features.
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/Balaji01-4D/pgxcli?style=social)](https://github.com/Balaji01-4D/pgxcli/stargazers)
+[![GitHub Repo stars](https://img.shields.io/github/stars/balajz/pgxcli?style=social)](https://github.com/balajz/pgxcli/stargazers)
 
 ---
 
@@ -46,7 +46,7 @@ Love the project? Share it with your friends, colleagues, or on social media. He
 
 ### 🐞 Report Issues & Give Feedback
 
-Found a bug or have ideas to improve? Your feedback is invaluable. [Open an issue](https://github.com/Balaji01-4D/pgxcli/issues) on GitHub.
+Found a bug or have ideas to improve? Your feedback is invaluable. [Open an issue](https://github.com/balajz/pgxcli/issues) on GitHub.
 
 ---
 

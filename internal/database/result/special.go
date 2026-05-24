@@ -3,7 +3,7 @@ package result
 import (
 	"fmt"
 
-	"github.com/balaji01-4d/pgxspecial"
+	"github.com/balajz/pgxcli/pgxspecial"
 	"github.com/jackc/pgx/v5"
 )
 

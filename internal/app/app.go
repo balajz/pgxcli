@@ -15,7 +15,6 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/balaji01-4d/pgxspecial"
 	"github.com/balajz/pgxcli/internal/app/renderer"
 	"github.com/balajz/pgxcli/internal/app/ui"
 	"github.com/balajz/pgxcli/internal/cliio"
@@ -23,6 +22,7 @@ import (
 	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balajz/pgxcli/internal/database"
 	"github.com/balajz/pgxcli/internal/parser"
+	"github.com/balajz/pgxcli/pgxspecial"
 )
 
 // Application defines the interface for the main application logic.
