@@ -1,9 +1,11 @@
 package cli
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type dbAndUserTestCase struct {
@@ -14,6 +16,26 @@ type dbAndUserTestCase struct {
 
 	expectedDB   string
 	expectedUser string
+}
+
+func TestPromptPasswordFallsBackToFullLineInput(t *testing.T) {
+	oldStdin := os.Stdin
+	stdin, writer, err := os.Pipe()
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		os.Stdin = oldStdin
+		_ = stdin.Close()
+	})
+
+	os.Stdin = stdin
+	_, err = writer.WriteString("correct horse battery staple\r\n")
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+
+	got, err := promptPassword("Enter password")
+
+	require.NoError(t, err)
+	assert.Equal(t, "correct horse battery staple", got)
 }
 
 func TestResolveDBAndUser(t *testing.T) {
