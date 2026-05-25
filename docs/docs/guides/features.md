@@ -23,7 +23,7 @@ pgxcli automatically detects your terminal's color depth — TrueColor, 256-colo
 
 ## Autocompletion
 
-pgxcli offers word-based completion for SQL keywords. Press `Tab` to cycle through suggestions.
+pgxcli offers context-aware SQL completion. Press `Tab` to cycle through suggestions for keywords, tables, schemas, and columns based on cursor position (for example after `FROM`, `JOIN`, or `alias.`).
 
 ![pgxcli autocompletion in action](/img/completion.gif)
 

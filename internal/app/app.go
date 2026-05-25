@@ -21,9 +21,6 @@ import (
 	"github.com/balajz/pgxcli/internal/parser"
 )
 
-
-
-
 // Application defines the interface for the main application logic.
 type Application interface {
 	// Start starts the main repl loop, reading input, executing commands and printing results until the user exits.
@@ -120,7 +117,6 @@ func (p *pgxCLI) execute(ctx context.Context, query string) tea.Cmd {
 	}
 }
 
-
 func (p *pgxCLI) Start(ctx context.Context) error {
 	p.printBanner(p.version)
 	executeFunc := func(query string) tea.Cmd {
@@ -130,12 +126,12 @@ func (p *pgxCLI) Start(ctx context.Context) error {
 	initialPrefix := p.client.ParsePrompt(p.config.Main.Prompt)
 	m, err := ui.New(
 		initialPrefix,
-		p.completer.GetKeyWords(),
 		p.config.Main.HistoryFile,
 		string(p.config.Main.Style),
 		p.version,
 		executeFunc,
 		p.Cancel,
+		p.completer.Complete,
 	)
 	if err != nil {
 		return fmt.Errorf("creating UI model: %w", err)

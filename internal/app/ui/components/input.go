@@ -24,8 +24,10 @@ type InputModel struct {
 	HistoryFile string
 }
 
+type CompleteFn func(input string, cursor int) (string, []string)
+
 // NewInputModel creates and configures the input model.
-func NewInputModel(prompt, historyFile string, pgKeywords []string, style string) (*InputModel, error) {
+func NewInputModel(prompt, historyFile string, style string, completeFn CompleteFn) (*InputModel, error) {
 	el := editline.New(1, 1)
 	el.Prompt = prompt
 
@@ -33,7 +35,7 @@ func NewInputModel(prompt, historyFile string, pgKeywords []string, style string
 		historyFile = getHistoryFilePath()
 	}
 
-	if err := applyEditlineConfig(el, historyFile, pgKeywords, style); err != nil {
+	if err := applyEditlineConfig(el, historyFile, style, completeFn); err != nil {
 		return nil, fmt.Errorf("applying input config: %w", err)
 	}
 
@@ -98,23 +100,38 @@ func postgresHighlighter(style string) func(string) string {
 	}
 }
 
-func postgresAutocomplete(pgKeywords []string) func(v [][]rune, line, col int) (string, editline.Completions) {
+func postgresAutocomplete(completeFn CompleteFn) func(v [][]rune, line, col int) (string, editline.Completions) {
 	return func(v [][]rune, line, col int) (string, editline.Completions) {
-		word, wstart, wend := computil.FindWord(v, line, col)
-		if word == "" {
-			return "", nil
-		}
-		upperWord := strings.ToUpper(word)
-		var matches []string
-		for _, kw := range pgKeywords {
-			if strings.HasPrefix(kw, upperWord) {
-				matches = append(matches, kw)
+		var sb strings.Builder
+		for i, rline := range v {
+			if i > 0 {
+				sb.WriteByte('\n')
 			}
+			sb.WriteString(string(rline))
 		}
+
+		absCursor := 0
+		for i := 0; i < line && i < len(v); i++ {
+			absCursor += len(v[i]) + 1
+		}
+		absCursor += col
+
+		word, wstart, wend := computil.FindWord(v, line, col)
+		category, matches := completeFn(sb.String(), absCursor)
 		if len(matches) == 0 {
 			return "", nil
 		}
-		return "", editline.SimpleWordsCompletion(matches, "Keywords", col, wstart, wend)
+
+		// Keep compatibility with previous keyword completer behavior.
+		if category == "" {
+			category = "Keywords"
+		}
+		if word == "" && wstart == 0 && wend == 0 {
+			wstart = col
+			wend = col
+		}
+
+		return "", editline.SimpleWordsCompletion(matches, category, col, wstart, wend)
 	}
 }
 
@@ -131,7 +148,7 @@ func detectTerminalColorProfile() string {
 	}
 }
 
-func applyEditlineConfig(el *editline.Model, historyFile string, pgKeywords []string, style string) error {
+func applyEditlineConfig(el *editline.Model, historyFile string, style string, completeFn CompleteFn) error {
 	el.SetHelpDisabled(true)
 	el.SetHighlighter(postgresHighlighter(style))
 	el.SetExternalEditorEnabled(true, "sql")
@@ -139,7 +156,7 @@ func applyEditlineConfig(el *editline.Model, historyFile string, pgKeywords []st
 		key.WithKeys("ctrl+e"),
 		key.WithHelp("ctrl+e", "edit query in external editor"),
 	)
-	el.AutoComplete = postgresAutocomplete(pgKeywords)
+	el.AutoComplete = postgresAutocomplete(completeFn)
 
 	el.CheckInputComplete = func(entireInput [][]rune, line, col int) bool {
 		var sb strings.Builder

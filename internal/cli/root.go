@@ -352,9 +352,12 @@ func ensureConnected(cliCtx *CliContext) error {
 }
 
 // initApplication Initializes the app,
-// which includes setting up the logger, config and autocompleter with PostgreSQL keywords.
+// which includes setting up the logger, config and SQL autocompletion metadata.
 func initApplication(cliCtx *CliContext) error {
 	completer := completer.New(cliCtx.Logger.Logger)
+	if err := completer.EnableSmartCompletion(cliCtx.Client); err != nil {
+		cliCtx.Logger.Error("Failed to initialize smart autocompletion metadata", "error", err)
+	}
 	pgxCLI, err := app.New(cliCtx.config, cliCtx.Printer, cliCtx.Logger.Logger, completer, cliCtx.Client, version)
 	if err != nil {
 		cliCtx.Logger.Error("Failed to initialize app", "error", err)

@@ -67,8 +67,8 @@ type Model struct {
 	dump *os.File
 }
 
-func New(initialPrefix string, pgKeywords []string, historyFile string, style string, version string, executeFunc execute, cancelFunc cancel) (*Model, error) {
-	inputModel, err := components.NewInputModel(initialPrefix, historyFile, pgKeywords, style)
+func New(initialPrefix string, historyFile string, style string, version string, executeFunc execute, cancelFunc cancel, completeFn components.CompleteFn) (*Model, error) {
+	inputModel, err := components.NewInputModel(initialPrefix, historyFile, style, completeFn)
 	if err != nil {
 		return nil, fmt.Errorf("creating input model: %w", err)
 	}
