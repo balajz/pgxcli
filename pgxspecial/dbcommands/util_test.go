@@ -325,9 +325,11 @@ func containsByField(rows []map[string]interface{}, field, expected string) bool
 func RequiresRowResult(t *testing.T, r pgxspecial.SpecialCommandResult) pgxspecial.RowResult {
 	t.Helper()
 
-	if r.ResultKind() != pgxspecial.ResultKindRows {
-		t.Fatalf("expected rows result, got %v", r.ResultKind())
+	_, isRow := r.(pgxspecial.RowResult)
+	if !isRow {
+		t.Fatalf("expected rows result, got %T", r)
 	}
+
 
 	rowsResult, ok := r.(pgxspecial.RowResult)
 	if !ok {

@@ -98,9 +98,11 @@ func TestListExtensionsVerbose(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListExtensions failed: %v", err)
 	}
-	if res.ResultKind() != pgxspecial.ResultKindExtensionVerbose {
-		t.Fatalf("Expected ResultKindExtensionVerbose, got %v", res.ResultKind())
+	_, isExt := res.(pgxspecial.ExtensionVerboseListResult)
+	if !isExt {
+		t.Fatalf("Expected ExtensionVerboseListResult, got %T", res)
 	}
+
 	result, ok := res.(pgxspecial.ExtensionVerboseListResult)
 	if !ok {
 		t.Fatalf("Expected ExtensionVerboseListResult, got %T", res)
