@@ -157,9 +157,11 @@ func TestExecuteCommand(t *testing.T) {
 		t.Errorf("Expected isSpecial to be true for known command")
 	}
 
-	if result.ResultKind() != pgxspecial.ResultKindRows {
-		t.Errorf("Expected result kind to be rows, got: %v", result.ResultKind())
+	_, isRow := result.(pgxspecial.RowResult)
+	if !isRow {
+		t.Errorf("Expected result kind to be rows, got: %T", result)
 	}
+
 
 	rows := result.(pgxspecial.RowResult).Rows
 
@@ -195,9 +197,11 @@ func TestRegisterCommandAlias(t *testing.T) {
 	if !isSpecial {
 		t.Errorf("Expected isSpecial to be true for known command alias")
 	}
-	if result.ResultKind() != pgxspecial.ResultKindRows {
-		t.Errorf("Expected result kind to be rows, got: %v", result.ResultKind())
+	_, isRow := result.(pgxspecial.RowResult)
+	if !isRow {
+		t.Errorf("Expected result kind to be rows, got: %T", result)
 	}
+
 
 	rows := result.(pgxspecial.RowResult).Rows
 	defer rows.Close()

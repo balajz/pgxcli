@@ -3,14 +3,6 @@ package pgxspecial
 
 import "github.com/jackc/pgx/v5"
 
-type SpecialResultKind int
-
-const (
-	ResultKindRows SpecialResultKind = iota
-	ResultKindDescribeTable
-	ResultKindExtensionVerbose
-)
-
 // SpecialCommand represents a parsed and executable special command.
 //
 // It contains the normalized command name, descriptive metadata, and the handler
@@ -36,10 +28,8 @@ type SpecialCommandRegistry struct {
 	CaseSensitive bool
 }
 
-type SpecialCommandResult interface {
-	// ResultKind indicates the kind of special result.
-	ResultKind() SpecialResultKind
-}
+// SpecialCommandResult represents the result of a special command.
+type SpecialCommandResult any
 
 // RowResult is a wrapper around pgx.Rows to implement SpecialCommandResult.
 // It is used for commands that return a set of rows.
@@ -47,10 +37,6 @@ type SpecialCommandResult interface {
 // The caller is responsible for closing the Rows when done.
 type RowResult struct {
 	Rows pgx.Rows
-}
-
-func (r RowResult) ResultKind() SpecialResultKind {
-	return ResultKindRows
 }
 
 // TableFooterMeta holds the metadata found at the footer of a \d table description
@@ -107,10 +93,6 @@ type DescribeTableListResult struct {
 	Results []DescribeTableResult
 }
 
-func (DescribeTableListResult) ResultKind() SpecialResultKind {
-	return ResultKindDescribeTable
-}
-
 // ExtensionVerboseResult holds the result of a single extension verbose command.
 // This is not used in any return types directly, but is embedded in
 // ExtensionVerboseListResult.
@@ -127,6 +109,3 @@ type ExtensionVerboseListResult struct {
 	Results []ExtensionVerboseResult
 }
 
-func (ExtensionVerboseListResult) ResultKind() SpecialResultKind {
-	return ResultKindExtensionVerbose
-}
