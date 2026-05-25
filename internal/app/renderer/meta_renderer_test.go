@@ -68,11 +68,8 @@ type testRowsResult struct {
 	data    [][]any
 }
 
-func (r testRowsResult) ResultKind() pgxspecial.SpecialResultKind {
-	return pgxspecial.ResultKindRows
-}
-
 func (r testRowsResult) Columns() []string {
+
 	return r.columns
 }
 

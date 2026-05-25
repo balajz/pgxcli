@@ -22,8 +22,7 @@ func (p *pgxCLI) handleQueryResult(r database.Rows, execDuration time.Duration) 
 		}
 	}
 
-	// We must close the rows before reading the tag to ensure pgx drains
-	// any remaining network data (like the CommandComplete tag or deferred errors).
+	// We must close the rows before reading the tag
 	if closeErr := r.Close(); closeErr != nil {
 		return nil, closeErr
 	}
