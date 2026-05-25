@@ -3,7 +3,6 @@ package result
 import (
 	"fmt"
 
-	"github.com/balajz/pgxcli/pgxspecial"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -41,11 +40,6 @@ func NewSpecialRow(rows pgx.Rows) (SpecialRow, error) {
 	}
 
 	return SpecialRow{columns: columns, data: data}, nil
-}
-
-// ResultKind marks this result as a row-based special command output.
-func (r SpecialRow) ResultKind() pgxspecial.SpecialResultKind {
-	return pgxspecial.ResultKindRows
 }
 
 // Columns returns row header names.
