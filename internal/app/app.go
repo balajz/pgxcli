@@ -15,14 +15,11 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/balajz/pgxcli/internal/app/ui"
 	"github.com/balajz/pgxcli/internal/cliio"
-	"github.com/balajz/pgxcli/internal/completer"
 	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balajz/pgxcli/internal/database"
 	"github.com/balajz/pgxcli/internal/parser"
+	compDB "github.com/balajz/pgxls/pkg/database"
 )
-
-
-
 
 // Application defines the interface for the main application logic.
 type Application interface {
@@ -39,25 +36,28 @@ var builtinsCommand = map[string]func() tea.Cmd{
 
 // pgxCLI is the main implementation of the Application interface.
 type pgxCLI struct {
-	model     *ui.Model
-	program   *tea.Program
-	Printer   cliio.Printer
-	config    *config.Config
-	logger    *slog.Logger
-	completer *completer.Completer
-	client    *database.Client
+	model      *ui.Model
+	program    *tea.Program
+	Printer    cliio.Printer
+	config     *config.Config
+	logger     *slog.Logger
+	client     *database.Client
+	compWorker *compDB.Worker
 
 	version string
 }
 
-func New(cfg *config.Config, printer cliio.Printer, logger *slog.Logger, completer *completer.Completer, client *database.Client, version string) (Application, error) {
+func New(cfg *config.Config, printer cliio.Printer, logger *slog.Logger, client *database.Client, version string) (Application, error) {
+	compWorker := compDB.NewWorker()
+	compWorker.Start()
+
 	return &pgxCLI{
-		config:    cfg,
-		logger:    logger,
-		Printer:   printer,
-		completer: completer,
-		client:    client,
-		version:   version,
+		config:     cfg,
+		logger:     logger,
+		Printer:    printer,
+		client:     client,
+		version:    version,
+		compWorker: compWorker,
 	}, nil
 }
 
@@ -120,7 +120,6 @@ func (p *pgxCLI) execute(ctx context.Context, query string) tea.Cmd {
 	}
 }
 
-
 func (p *pgxCLI) Start(ctx context.Context) error {
 	p.printBanner(p.version)
 	executeFunc := func(query string) tea.Cmd {
@@ -130,12 +129,12 @@ func (p *pgxCLI) Start(ctx context.Context) error {
 	initialPrefix := p.client.ParsePrompt(p.config.Main.Prompt)
 	m, err := ui.New(
 		initialPrefix,
-		p.completer.GetKeyWords(),
 		p.config.Main.HistoryFile,
 		string(p.config.Main.Style),
 		p.version,
 		executeFunc,
 		p.Cancel,
+		p.getCompletions(),
 	)
 	if err != nil {
 		return fmt.Errorf("creating UI model: %w", err)
@@ -152,7 +151,6 @@ func (p *pgxCLI) Start(ctx context.Context) error {
 }
 
 func (p *pgxCLI) Cancel(ctx context.Context) error {
-
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -178,7 +176,6 @@ func (p *pgxCLI) withPrompt(cmds ...tea.Cmd) tea.Cmd {
 }
 
 func (p *pgxCLI) printViaPager(str string) tea.Cmd {
-
 	if p.Printer.ShouldUsePager(str) {
 		cmd, ok := cliio.PagerCmd(str)
 		if !ok {
@@ -198,6 +195,10 @@ func (p *pgxCLI) Close() error {
 	p.logger.Info("closing application and saving history")
 	if p.model != nil {
 		return p.model.Close()
+	}
+
+	if p.compWorker != nil {
+		p.compWorker.Stop()
 	}
 	return nil
 }

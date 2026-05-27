@@ -25,7 +25,7 @@ type InputModel struct {
 }
 
 // NewInputModel creates and configures the input model.
-func NewInputModel(prompt, historyFile string, pgKeywords []string, style string) (*InputModel, error) {
+func NewInputModel(prompt, historyFile string, style string, autoCompleter editline.AutoCompleteFn) (*InputModel, error) {
 	el := editline.New(1, 1)
 	el.Prompt = prompt
 
@@ -33,9 +33,11 @@ func NewInputModel(prompt, historyFile string, pgKeywords []string, style string
 		historyFile = getHistoryFilePath()
 	}
 
-	if err := applyEditlineConfig(el, historyFile, pgKeywords, style); err != nil {
+	if err := applyEditlineConfig(el, historyFile, style); err != nil {
 		return nil, fmt.Errorf("applying input config: %w", err)
 	}
+
+	el.AutoComplete = autoCompleter
 
 	return &InputModel{
 		Model:       el,
@@ -131,7 +133,7 @@ func detectTerminalColorProfile() string {
 	}
 }
 
-func applyEditlineConfig(el *editline.Model, historyFile string, pgKeywords []string, style string) error {
+func applyEditlineConfig(el *editline.Model, historyFile string, style string) error {
 	el.SetHelpDisabled(true)
 	el.SetHighlighter(postgresHighlighter(style))
 	el.SetExternalEditorEnabled(true, "sql")
@@ -139,7 +141,6 @@ func applyEditlineConfig(el *editline.Model, historyFile string, pgKeywords []st
 		key.WithKeys("ctrl+e"),
 		key.WithHelp("ctrl+e", "edit query in external editor"),
 	)
-	el.AutoComplete = postgresAutocomplete(pgKeywords)
 
 	el.CheckInputComplete = func(entireInput [][]rune, line, col int) bool {
 		var sb strings.Builder
