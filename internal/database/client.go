@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/balajz/pgxcli/pgxspecial"
+	compDB "github.com/balajz/pgxls/pkg/database"
 )
 
 const nilPlaceholder = "(nil)"
@@ -198,6 +199,21 @@ func (c *Client) Ping(ctx context.Context) error {
 		return fmt.Errorf("not connected to any database")
 	}
 	return c.executor.ping(ctx)
+}
+
+// Cache populates the completion worker's cache
+// to provide context aware completions.
+func (c *Client) Cache(worker *compDB.Worker) error {
+	if c.executor == nil {
+		return fmt.Errorf("not connected to any database")
+	}
+
+	repo := compDB.NewPostgreSQLDBRepository(c.executor.conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return worker.ReCache(ctx, repo)
 }
 
 // Close closes the current database connection if one exists.
