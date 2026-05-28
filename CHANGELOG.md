@@ -6,6 +6,7 @@
 
 ### Added
 - **Context Aware Autocompletion**: pgxcli now provides context-aware autocompletion for SQL queries, including table names, column names, and SQL keywords.
+- **meta command autocompletion**: Added autocompletion for meta commands.
 
 ## [0.2.3] - 2026-05-24
 
