@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -298,14 +297,6 @@ func connectWithFields(
 		password = getPasswordFromEnv()
 	}
 
-	if shouldPromptBeforeConnect(password, neverPrompt, forcePrompt, runtime.GOOS) {
-		pwd, err := promptPassword("Enter password")
-		if err != nil {
-			return err
-		}
-		password = pwd
-	}
-
 	connector, err := database.NewPGConnectorFromFields(
 		params.host,
 		params.database,
@@ -330,14 +321,18 @@ func connectWithFields(
 	}
 
 	cliCtx.Logger.Debug("Connection failed, prompting for password")
-	if wErr := renderer.Error(
-		fmt.Errorf("Wrong password, try again."), //nolint // user-facing message
-		os.Stderr,
-	); wErr != nil {
-		return wErr
+	prompt := "Enter password"
+	if password != "" {
+		if wErr := renderer.Error(
+			fmt.Errorf("Wrong password, try again."), //nolint // user-facing message
+			os.Stderr,
+		); wErr != nil {
+			return wErr
+		}
+		prompt = "Enter password again"
 	}
 
-	pwd, err := promptPassword("Enter password again")
+	pwd, err := promptPassword(prompt)
 	if err != nil {
 		return err
 	}
@@ -349,10 +344,6 @@ func connectWithFields(
 	}
 
 	return nil
-}
-
-func shouldPromptBeforeConnect(password string, neverPrompt bool, forcePrompt bool, goos string) bool {
-	return password == "" && !neverPrompt && !forcePrompt && goos == "windows"
 }
 
 func ensureConnected(cliCtx *CliContext) error {

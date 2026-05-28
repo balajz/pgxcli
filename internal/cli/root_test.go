@@ -38,54 +38,6 @@ func TestPromptPasswordFallsBackToFullLineInput(t *testing.T) {
 	assert.Equal(t, "correct horse battery staple", got)
 }
 
-func TestShouldPromptBeforeConnect(t *testing.T) {
-	testcases := []struct {
-		name        string
-		password    string
-		neverPrompt bool
-		forcePrompt bool
-		goos        string
-		want        bool
-	}{
-		{
-			name: "windows prompts before empty password connection",
-			goos: "windows",
-			want: true,
-		},
-		{
-			name:     "windows skips prompt when password is already known",
-			password: "secret",
-			goos:     "windows",
-			want:     false,
-		},
-		{
-			name:        "windows respects no password flag",
-			neverPrompt: true,
-			goos:        "windows",
-			want:        false,
-		},
-		{
-			name:        "windows does not prompt twice after force prompt",
-			forcePrompt: true,
-			goos:        "windows",
-			want:        false,
-		},
-		{
-			name: "unix keeps passwordless first attempt",
-			goos: "linux",
-			want: false,
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			got := shouldPromptBeforeConnect(tc.password, tc.neverPrompt, tc.forcePrompt, tc.goos)
-
-			assert.Equal(t, tc.want, got)
-		})
-	}
-}
-
 func TestResolveDBAndUser(t *testing.T) {
 	testcases := []struct {
 		name  string
