@@ -17,12 +17,13 @@ func (p *pgxCLI) getCompletions() bubbline.AutoCompleteFn {
 		p.logger.Debug("continuing with keyword completions")
 	}
 
-	engine := engine.NewCompleter(p.compWorker.Cache())
+	compEngine := engine.NewCompleter(p.compWorker.Cache())
 
 	return func(v [][]rune, line, col int) (msg string, comps bubbline.Completions) {
+		compEngine.DBCache = p.compWorker.Cache()
 		sql, _ := computil.Flatten(v, line, col)
 
-		items, err := engine.Complete(sql, line, col, true)
+		items, err := compEngine.Complete(sql, line, col, true)
 		if err != nil || len(items) == 0 {
 			return "", nil
 		}
