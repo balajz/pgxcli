@@ -31,7 +31,8 @@ log_file = "default"
 pager = "auto"
 
 
-# Error handling
+# Error handling [PLANNED]
+# Not yet implemented. Reserved for a future release.
 # When one of multiple SQL statements causes an error, choose to either
 # continue executing the remaining statements, or stopping
 # Possible values: "STOP" or "RESUME"
