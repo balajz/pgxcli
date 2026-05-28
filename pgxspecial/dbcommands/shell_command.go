@@ -10,15 +10,16 @@ import (
 	"github.com/google/shlex"
 )
 
-func init() {
-	pgxspecial.RegisterCommand(pgxspecial.SpecialCommandRegistry{
-		Cmd:           "\\!",
-		Description:   "Execute a shell command.",
-		Syntax:        "\\! command",
-		Handler:       ShellCommand,
-		CaseSensitive: true,
-	})
-}
+// Not registered for now
+// func init() {
+// 	pgxspecial.RegisterCommand(pgxspecial.SpecialCommandRegistry{
+// 		Cmd:           "\\!",
+// 		Description:   "Execute a shell command.",
+// 		Syntax:        "\\! command",
+// 		Handler:       ShellCommand,
+// 		CaseSensitive: true,
+// 	})
+// }
 
 func ShellCommand(ctx context.Context, db database.Queryer, args string, verbose bool) (pgxspecial.SpecialCommandResult, error) {
 	parts, err := shlex.Split(args)
