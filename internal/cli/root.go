@@ -351,7 +351,7 @@ func ensureConnected(cliCtx *CliContext) error {
 }
 
 // initApplication Initializes the app,
-// which includes setting up the logger, config and autocompleter with PostgreSQL keywords.
+// which includes setting up the logger, config and database client.
 func initApplication(cliCtx *CliContext) error {
 	pgxCLI, err := app.New(cliCtx.config, cliCtx.Printer, cliCtx.Logger.Logger, cliCtx.Client, version)
 	if err != nil {
