@@ -37,9 +37,12 @@ func (p *pgxCLI) handleSpecialCommand(ctx context.Context, res pgxspecial.Specia
 			client.GetDatabase(),
 			client.GetUser(),
 		)
-		if err := p.client.Cache(p.compWorker); err != nil {
-			p.logger.Error("failed to research the database cache for completion")
-		}
+
+		go func() {
+			if err := p.client.Cache(p.compWorker); err != nil {
+				p.logger.Error("failed to refresh database cache for completion", "error", err)
+			}
+		}()
 
 		return p.withPrompt(p.printViaPager(out + timingInfo))
 

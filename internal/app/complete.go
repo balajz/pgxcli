@@ -11,11 +11,14 @@ import (
 )
 
 func (p *pgxCLI) getCompletions() bubbline.AutoCompleteFn {
-	err := p.client.Cache(p.compWorker)
-	if err != nil {
-		p.logger.Error("error caching database schema for completions", "error", err)
-		p.logger.Debug("continuing with keyword completions")
-	}
+	go func() {
+		err := p.client.Cache(p.compWorker)
+		if err != nil {
+			p.logger.Error("error caching database schema for completions", "error", err)
+			p.logger.Debug("continuing with keyword completions")
+		}
+		p.logger.Debug("completion cache is ready")
+	}()
 
 	compEngine := engine.NewCompleter(p.compWorker.Cache())
 
@@ -143,7 +146,6 @@ func (c *compCandidate) MoveRight() int { return c.moveRight }
 func (c *compCandidate) DeleteLeft() int { return c.deleteLeft }
 
 func (c *compCandidate) SidePanel() string { return c.docs }
-
 
 func limitKeyword(comp map[string][]compCandidate, limit int) {
 	if comps, ok := comp["keywords"]; ok {
