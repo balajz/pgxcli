@@ -685,3 +685,27 @@ tr:hover td {
 .custom-github-nav-item:hover .github-nav-stats {
   opacity: 0.9;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MOBILE RESPONSIVENESS
+───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 996px) {
+  /* Reset search bar position so it doesn't overlap the mobile hamburger/logo */
+  [class*='searchBar'] {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+  }
+
+  /* Hide the extra navbar text to prevent mobile header overflow */
+  .navbar-quote {
+    display: none !important;
+  }
+
+  /* Make markdown tables scroll horizontally instead of breaking the page width */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
