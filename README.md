@@ -45,8 +45,8 @@
 
 Highlights:
 * Interactive REPL with customizable prompt and style.
-* SQL syntax highlighting.
-* SQL keyword autocompletion.
+* Rich syntax highlighting.
+* Context aware autocompletion.
 * Persistent command history.
 * PostgreSQL special backslash commands (`\d`, `\l`, `\dt`, `\q`).
 
