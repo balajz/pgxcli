@@ -4,9 +4,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Balaji01-4D/bubbline"
-	"github.com/Balaji01-4D/bubbline/computil"
-	"github.com/Balaji01-4D/bubbline/editline"
+	"github.com/balajz/bubbline"
+	"github.com/balajz/bubbline/computil"
+	"github.com/balajz/bubbline/editline"
 	"github.com/balajz/pgxcli/pgxspecial"
 	"github.com/balajz/pgxls/pkg/engine"
 	"github.com/balajz/pgxls/pkg/types"
@@ -30,7 +30,6 @@ func (p *pgxCLI) getCompletions() bubbline.AutoCompleteFn {
 
 		sql, _ := computil.Flatten(v, line, col)
 		word, wstart, wend := computil.FindWord(v, line, col)
-
 
 		if strings.HasPrefix(word, "\\") && strings.Index(sql, "\\") == 0 {
 			return completeMetaCommand(word, col, wstart, wend, maxCompletions)
@@ -101,7 +100,7 @@ func (p *pgxCLI) getCompletions() bubbline.AutoCompleteFn {
 	}
 }
 
-func completeMetaCommand(s string, col, wStart, wEnd , limit int) (string, bubbline.Completions) {
+func completeMetaCommand(s string, col, wStart, wEnd, limit int) (string, bubbline.Completions) {
 	cmds := pgxspecial.Export()
 
 	var matches struct {

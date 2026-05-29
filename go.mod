@@ -7,8 +7,8 @@ require (
 	charm.land/bubbletea/v2 v2.0.6
 	charm.land/huh/v2 v2.0.3
 	charm.land/lipgloss/v2 v2.0.3
-	github.com/Balaji01-4D/bubbline v0.1.0
 	github.com/alecthomas/chroma/v2 v2.24.1
+	github.com/balajz/bubbline v0.2.1-0.20260529022404-560341275523
 	github.com/balajz/pgxls v0.1.2
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/davecgh/go-spew v1.1.1

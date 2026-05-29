@@ -9,10 +9,10 @@ import (
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
-	"github.com/Balaji01-4D/bubbline/computil"
-	"github.com/Balaji01-4D/bubbline/editline"
-	"github.com/Balaji01-4D/bubbline/history"
 	"github.com/alecthomas/chroma/v2/quick"
+	"github.com/balajz/bubbline/computil"
+	"github.com/balajz/bubbline/editline"
+	"github.com/balajz/bubbline/history"
 	"github.com/muesli/termenv"
 )
 
@@ -134,7 +134,6 @@ func detectTerminalColorProfile() string {
 }
 
 func applyEditlineConfig(el *editline.Model, historyFile string, style string) error {
-	el.SetHelpDisabled(true)
 	el.SetHighlighter(postgresHighlighter(style))
 	el.SetExternalEditorEnabled(true, "sql")
 	el.KeyMap.ExternalEdit = key.NewBinding(
