@@ -232,7 +232,15 @@ func (m *Model) printUserInput(prefix, input string) tea.Cmd {
 	return func() tea.Msg {
 		var highlightedInput string
 		if input != "" {
-			highlightedInput = m.highlighter(input)
+			h := lipgloss.Height(input)
+			var notice string
+			if h > 5 { // clamp text height to avoid rendering issues and long scrolling.
+				lines := strings.Split(input, "\n")
+				input = strings.Join(lines[:5], "\n")
+				notice = "\n" + m.styles.ClampNotice.Render(fmt.Sprintf("... (%d more lines)", h-5))
+			}
+
+			highlightedInput = m.highlighter(input) + notice
 		}
 
 		// used to separate previous user input from the current one with half straight line.

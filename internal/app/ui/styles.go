@@ -22,6 +22,9 @@ type Styles struct {
 
 	// StatusBar styles the status bar at the bottom.
 	StatusBar lipgloss.Style
+
+	// ClampNotice styles the notice when user input is clamped.
+	ClampNotice lipgloss.Style
 }
 
 func DefaultStyles() Styles {
@@ -48,5 +51,9 @@ func DefaultStyles() Styles {
 			Foreground(lipgloss.Color("#C4B5FD")).
 			Background(lipgloss.Color("#2A273F")).
 			Padding(0, 1),
+		ClampNotice: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#A78BFA")).
+			Italic(true).
+			Faint(true),
 	}
 }
