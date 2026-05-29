@@ -57,8 +57,6 @@ Highlights:
 
 [Pgcli][pgcli-url] is a mature PostgreSQL CLI developed over many years, which has set the standard for interactive PostgreSQL clients.
 
-**pgxcli** takes the simpler approach, focusing on speed and minmal setup. It is a singe Go binary with fast startup and TOML configuration. If you need a lightweight, It may be good fit. for a more feature-rich, established experience, pgcli remains the benchmark.
-
 ### Where pgxcli stands out:
 #### Now 
 * Single binary, no external runtime dependencies
@@ -71,7 +69,7 @@ Highlights:
 * Browser based Table view via localhost
 * Direct Table export to SQL INSERT statements, CSV, MD tables, Excel, and HTML.
 
-
+For more details, see the [Comparison with pgcli][comparison].
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -180,7 +178,7 @@ Thank you for being part of the community! 🙌
 [pgxcli-shield]: https://img.shields.io/badge/Pgxcli-7B36ED?style=for-the-badge&logo=database&logoColor=white
 [go-shield]: https://img.shields.io/badge/Go-%23000000?style=for-the-badge&logo=go&logoColor=white
 [postgres-shield]: https://img.shields.io/badge/PostgreSQL-7B36ED.svg?style=for-the-badge&logoColor=white
-
+[comparison]: https://pgxcli.vercel.app/docs/guides/comparison-with-pgcli
 [pgx-url]: https://github.com/jackc/pgx
 [cobra-url]: https://github.com/spf13/cobra
 [viper-url]: https://github.com/spf13/viper
