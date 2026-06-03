@@ -164,6 +164,7 @@ Thank you for being part of the community! 🙌
 ## Thanks
 
 * [pgx][pgx-url]
+* [bubbletea][bubbletea-url]
 * [Cobra][cobra-url]
 * [Viper][viper-url]
 * Inspired by [pgcli][pgcli-url]
@@ -180,6 +181,7 @@ Thank you for being part of the community! 🙌
 [postgres-shield]: https://img.shields.io/badge/PostgreSQL-7B36ED.svg?style=for-the-badge&logoColor=white
 [comparison]: https://pgxcli.vercel.app/docs/guides/comparison-with-pgcli
 [pgx-url]: https://github.com/jackc/pgx
+[bubbletea-url]: https://github.com/charmbracelet/bubbletea
 [cobra-url]: https://github.com/spf13/cobra
 [viper-url]: https://github.com/spf13/viper
 [pgcli-url]: https://github.com/dbcli/pgcli
