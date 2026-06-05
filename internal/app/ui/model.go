@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/spinner"
@@ -27,6 +28,7 @@ type State int
 const (
 	StateInput State = iota
 	StateExecuting
+	StatePending
 )
 
 // ReadyMsg signals the ui that execution is done and it should prompt.
@@ -40,6 +42,10 @@ type QuitRequestMsg struct{}
 
 // ConfirmQuitMsg is used internally to finalize quitting.
 type ConfirmQuitMsg struct{}
+
+// seqTimeoutMsg is sent after 500ms to cancel a pending key
+// seq if the second key was not pressed on time.
+type seqTimeoutMsg struct{ seq int }
 
 type cancel func(ctx context.Context) error
 
@@ -56,6 +62,7 @@ type Model struct {
 	prevUserInput string
 	version       string
 	highlighter   func(string) string
+	escSeq        int
 
 	keys   KeyMap
 	styles Styles
@@ -168,6 +175,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m.handleInput()
 
+	case seqTimeoutMsg:
+		if msg.seq == m.escSeq {
+			m.state = StateInput
+		}
+		return m, nil
+
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.Quit) {
 			return m, func() tea.Msg {
@@ -188,6 +201,22 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.input.Reset()
 			return m, nil
+		}
+		if key.Matches(msg, m.keys.Clear) {
+			if m.state == StateExecuting {
+				return m, nil
+			}
+			if m.state == StatePending {
+				m.state = StateInput
+				m.input.Reset()
+				return m, nil
+			}
+			m.state = StatePending
+			m.escSeq++
+			n := m.escSeq
+			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
+				return seqTimeoutMsg{seq: n}
+			})
 		}
 	}
 
