@@ -182,6 +182,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		if m.state == StatePending && !key.Matches(msg, m.keys.Clear) {
+			m.state = StateInput
+		}
+
 		if key.Matches(msg, m.keys.Quit) {
 			return m, func() tea.Msg {
 				return QuitRequestMsg{}
