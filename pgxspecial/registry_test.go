@@ -162,7 +162,6 @@ func TestExecuteCommand(t *testing.T) {
 		t.Errorf("Expected result kind to be rows, got: %T", result)
 	}
 
-
 	rows := result.(pgxspecial.RowResult).Rows
 
 	defer rows.Close()
@@ -201,7 +200,6 @@ func TestRegisterCommandAlias(t *testing.T) {
 	if !isRow {
 		t.Errorf("Expected result kind to be rows, got: %T", result)
 	}
-
 
 	rows := result.(pgxspecial.RowResult).Rows
 	defer rows.Close()

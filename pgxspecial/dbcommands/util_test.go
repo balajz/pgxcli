@@ -330,7 +330,6 @@ func RequiresRowResult(t *testing.T, r pgxspecial.SpecialCommandResult) pgxspeci
 		t.Fatalf("expected rows result, got %T", r)
 	}
 
-
 	rowsResult, ok := r.(pgxspecial.RowResult)
 	if !ok {
 		t.Fatalf("expected RowsResult, got %T", r)
