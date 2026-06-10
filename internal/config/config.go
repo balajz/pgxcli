@@ -16,8 +16,6 @@ import (
 )
 
 const (
-	// Default indicates that a path-based option should use its default location.
-	Default  = "default"
 	filename = "config.toml"
 	appName  = "pgxcli"
 )
