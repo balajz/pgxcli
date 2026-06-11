@@ -23,9 +23,13 @@ func setIsolatedUserConfigEnv(t *testing.T) {
 func TestLoad_Success(t *testing.T) {
 	setIsolatedUserConfigEnv(t)
 
+	userConfigPath, err := UserConfigPath()
+	require.NoError(t, err)
+
 	cfg, err := Load()
 	require.NoError(t, err)
 	assert.NotNil(t, cfg)
+	assert.Equal(t, userConfigPath, cfg.Path)
 
 	assert.Equal(t, "\\u@\\h:\\d> ", cfg.Main.Prompt)
 	assert.Equal(t, SyntaxStyleMonokai, cfg.Main.Style)
@@ -55,6 +59,7 @@ on_error = "RESUME"
 	cfg, err := Load()
 	require.NoError(t, err)
 	assert.NotNil(t, cfg)
+	assert.Equal(t, userConfigPath, cfg.Path)
 
 	assert.Equal(t, "custom> ", cfg.Main.Prompt)
 	assert.Equal(t, SyntaxStyleDracula, cfg.Main.Style)
@@ -79,6 +84,7 @@ prompt = "custom> "
 	cfg, err := Load()
 	require.NoError(t, err)
 	assert.NotNil(t, cfg)
+	assert.Equal(t, userConfigPath, cfg.Path)
 
 	assert.Equal(t, "custom> ", cfg.Main.Prompt)
 	assert.Equal(t, SyntaxStyleMonokai, cfg.Main.Style)

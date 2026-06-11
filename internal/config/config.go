@@ -22,6 +22,8 @@ const (
 
 // Config represents the top-level application configuration.
 type Config struct {
+	Path string `mapstructure:"-" toml:"-"`
+
 	Main  MainConfig  `mapstructure:"main" toml:"main"`
 	Table TableConfig `mapstructure:"table" toml:"table"`
 }
@@ -94,8 +96,9 @@ func Load() (*Config, error) {
 			),
 		)
 	}
+	cfg.Path = userPath
 
-	if err := validate(cfg); err != nil {
+	if err := Validate(cfg); err != nil {
 		return nil, fmt.Errorf("validate config: %w", err)
 	}
 	return &cfg, nil
