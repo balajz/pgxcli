@@ -29,7 +29,7 @@ func TestValidate_Success(t *testing.T) {
 		},
 	}
 
-	err := validate(cfg)
+	err := Validate(cfg)
 	assert.NoError(t, err)
 }
 
@@ -45,7 +45,7 @@ func TestValidate_MultipleErrors(t *testing.T) {
 		},
 	}
 
-	err := validate(cfg)
+	err := Validate(cfg)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "prompt must not be empty")
 	assert.Contains(t, err.Error(), "style must not be empty")

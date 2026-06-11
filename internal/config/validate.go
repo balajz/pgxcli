@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func validate(cfg Config) error {
+func Validate(cfg Config) error {
 	var errs []error
 
 	if cfg.Main.Prompt == "" {
