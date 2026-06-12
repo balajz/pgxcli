@@ -113,7 +113,7 @@ For roadmap-sized features (streaming results, browser table view, export format
 
 ## Development Setup
 
-**Prerequisites:** Go 1.24+, a running PostgreSQL instance (local or via Docker).
+**Prerequisites:** Go 1.26.4+, a running PostgreSQL instance (local or via Docker).
 
 ```bash
 # Clone your fork

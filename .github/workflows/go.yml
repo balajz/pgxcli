@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version: ["1.25.x"]
+        go-version: ["1.26.4"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
@@ -58,7 +58,7 @@ jobs:
       strategy:
         fail-fast: false
         matrix:
-          go-version: ["1.25.x"] 
+          go-version: ["1.26.4"] 
           platform:
             - os: ubuntu-latest
               arch: amd64

@@ -47,7 +47,7 @@ coverage:
 
 go-mod-tidy:
 	@echo "Tidying go.mod..."
-	@go mod tidy -compat=1.25
+	@go mod tidy -compat=1.26
 	@go mod verify
 	@echo "✓ Go modules verified"
 

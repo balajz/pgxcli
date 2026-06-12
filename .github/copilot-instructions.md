@@ -95,7 +95,7 @@ pgxcli is an interactive PostgreSQL CLI written in Go. The application follows a
 
 ### Go Version & Dependencies
 
-- Go 1.25.8+ required.
+- Go 1.26.4+ required.
 - Key dependencies: pgx/v5 (database), cobra (CLI), viper (config), charm libraries (TUI), testify (testing).
 
 ### Naming Conventions
