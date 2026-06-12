@@ -110,6 +110,15 @@ func TestUserConfigPath(t *testing.T) {
 	assert.Contains(t, path, appName)
 }
 
+func TestUserConfigPath_UsesXDGConfigHomeWhenSet(t *testing.T) {
+	tempDir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", tempDir)
+
+	path, err := UserConfigPath()
+	require.NoError(t, err)
+	assert.Equal(t, filepath.Join(tempDir, appName, filename), path)
+}
+
 func TestEnsureUserConfig_CreatesConfigOnFirstRun(t *testing.T) {
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "config.toml")

@@ -105,6 +105,10 @@ func GetDefaultConfig() (*Config, error) {
 
 // UserConfigPath returns the user config path (for example: ~/.config/pgxcli/config.toml).
 func UserConfigPath() (string, error) {
+	if userdir := os.Getenv("XDG_CONFIG_HOME"); userdir != "" {
+		return filepath.Join(userdir, appName, filename), nil
+	}
+
 	userdir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
