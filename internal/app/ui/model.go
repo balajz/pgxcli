@@ -63,6 +63,7 @@ type Model struct {
 	version       string
 	highlighter   func(string) string
 	escSeq        int
+	ctrlcSeq      int
 
 	keys   KeyMap
 	styles Styles
@@ -176,13 +177,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleInput()
 
 	case seqTimeoutMsg:
-		if msg.seq == m.escSeq {
+		if msg.seq == m.escSeq || msg.seq == m.ctrlcSeq {
 			m.state = StateInput
 		}
 		return m, nil
 
 	case tea.KeyMsg:
-		if m.state == StatePending && !key.Matches(msg, m.keys.Clear) {
+		if m.state == StatePending && !key.Matches(msg, m.keys.Clear) && !key.Matches(msg, m.keys.Interrupt) {
 			m.state = StateInput
 		}
 
@@ -202,9 +203,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return nil
 				}
 			}
-
-			m.input.Reset()
-			return m, nil
+			if m.state == StatePending {
+				m.state = StateInput
+				return m, func() tea.Msg {
+					return QuitRequestMsg{}
+				}
+			}
+			m.state = StatePending
+			m.ctrlcSeq++
+			n := m.ctrlcSeq
+			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
+				return seqTimeoutMsg{seq: n}
+			})
 		}
 		if key.Matches(msg, m.keys.Clear) {
 			if m.state == StateExecuting {
