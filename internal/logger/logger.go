@@ -2,12 +2,13 @@
 package logger
 
 import (
-	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/balajz/pgxcli/internal/perrors"
 )
 
 // Logger wraps slog.Logger and the underlying file for proper cleanup.
@@ -36,14 +37,16 @@ func InitLogger(debug bool, filename string) (*Logger, error) {
 		opts.Level = slog.LevelDebug
 	}
 
-	if err := os.MkdirAll(filepath.Dir(filename), 0o755); err != nil {
-		return nil, fmt.Errorf("failed to create log directory: %w", err)
-	}
-
 	file, err := os.OpenFile(filename,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open log file: %w", err)
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to create the log file"),
+			perrors.WithDetails(
+				"path", filename,
+			),
+		)
 	}
 
 	handler := slog.NewTextHandler(file, opts)
@@ -56,7 +59,15 @@ func InitLogger(debug bool, filename string) (*Logger, error) {
 // Close closes the underlying log file if one exists.
 func (l *Logger) Close() error {
 	if l.file != nil {
-		return l.file.Close()
+		if err := l.file.Close(); err != nil {
+			return perrors.Wrap(
+				err,
+				perrors.WithMessage("failed to close the log file"),
+				perrors.WithDetails(
+					"path", l.file.Name(),
+				),
+			)
+		}
 	}
 	return nil
 }
@@ -89,7 +100,13 @@ func getDefaultLogPath() (string, error) {
 
 	logDir := filepath.Join(baseDir, "pgxcli")
 	if err := os.MkdirAll(logDir, 0o755); err != nil {
-		return "", fmt.Errorf("failed to create log directory: %w", err)
+		return "", perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to create log directory"),
+			perrors.WithDetails(
+				"path", logDir,
+			),
+		)
 	}
 
 	return filepath.Join(logDir, "pgxcli.log"), nil
