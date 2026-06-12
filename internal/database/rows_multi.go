@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -39,7 +40,11 @@ func (r *sqlRowsMultiResultSet) Columns() []string {
 func (r *sqlRowsMultiResultSet) Tag() (CommandTag, error) {
 	if rr := r.rows.ResultReader(); rr != nil {
 		// ResultReader may be nil if an empty query was executed.
-		return r.rows.ResultReader().Close()
+		tag, err := r.rows.ResultReader().Close()
+		if err != nil {
+			return tag, perrors.Wrap(err, perrors.WithMessage("failed to close result reader"))
+		}
+		return tag, nil
 	}
 	return pgconn.CommandTag{}, nil
 }
@@ -47,9 +52,13 @@ func (r *sqlRowsMultiResultSet) Tag() (CommandTag, error) {
 func (r *sqlRowsMultiResultSet) Close() (retErr error) {
 	if rr := r.rows.ResultReader(); rr != nil {
 		// ResultReader may be nil if an empty query was executed.
-		_, retErr = r.rows.ResultReader().Close()
+		if _, err := r.rows.ResultReader().Close(); err != nil {
+			retErr = perrors.Wrap(err, perrors.WithMessage("failed to close result reader"))
+		}
 	}
-	retErr = errors.Join(retErr, r.rows.Close())
+	if err := r.rows.Close(); err != nil {
+		retErr = errors.Join(retErr, perrors.Wrap(err, perrors.WithMessage("failed to close multi result reader")))
+	}
 	if r.exec.conn.IsClosed() {
 		return retErr
 	}
@@ -68,7 +77,7 @@ func (r *sqlRowsMultiResultSet) Next(values []driver.Value) error {
 	}
 	if !rd.NextRow() {
 		if _, err := rd.Close(); err != nil {
-			return err
+			return perrors.Wrap(err, perrors.WithMessage("failed to close result reader"))
 		}
 		return io.EOF
 	}
@@ -103,7 +112,7 @@ func (r *sqlRowsMultiResultSet) NextResultSet() (bool, error) {
 	next := r.rows.NextResult()
 	if !next {
 		if err := r.rows.Close(); err != nil {
-			return false, err
+			return false, perrors.Wrap(err, perrors.WithMessage("failed to close multi result reader"))
 		}
 	}
 	if r.exec.conn.IsClosed() {

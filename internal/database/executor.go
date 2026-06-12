@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/balajz/pgxcli/internal/database/result"
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/balajz/pgxcli/pgxspecial"
 	"github.com/jackc/pgx/v5"
 )
@@ -42,7 +43,10 @@ func newExecutor(ctx context.Context, c Connector, logger *slog.Logger) (*execut
 			logger.Error("Failed to close connection", "error", err)
 		}
 
-		return nil, err
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("db ping failed"),
+		)
 	}
 
 	return &executor{
