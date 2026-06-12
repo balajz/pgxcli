@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/balajz/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/renderer"
@@ -38,7 +39,7 @@ func (p *TableFormatter) Iter(_, ew io.Writer, row []string) error {
 	}
 
 	if err := p.table.Append(row); err != nil {
-		return err
+		return perrors.Wrap(err, perrors.WithMessage("failed to append row to table"))
 	}
 
 	p.rows++
@@ -61,7 +62,10 @@ func (p *TableFormatter) Caption(w io.Writer, caption string) error {
 }
 
 func (p *TableFormatter) Render(_ io.Writer, _ int) error {
-	return p.table.Render()
+	if err := p.table.Render(); err != nil {
+		return perrors.Wrap(err, perrors.WithMessage("failed to render table"))
+	}
+	return nil
 }
 
 func (p *TableFormatter) Done(_ io.Writer) error {

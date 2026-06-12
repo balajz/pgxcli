@@ -6,7 +6,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/balajz/pgxcli/internal/cliio"
 	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balajz/pgxcli/internal/database"
+	"github.com/balajz/pgxcli/internal/perrors"
 	compDB "github.com/balajz/pgxls/pkg/database"
 )
 
@@ -94,14 +94,17 @@ func (p *pgxCLI) Start(ctx context.Context) error {
 		p.getCompletions(),
 	)
 	if err != nil {
-		return fmt.Errorf("creating UI model: %w", err)
+		return err
 	}
 
 	p.model = m
 	p.program = tea.NewProgram(p.model, tea.WithContext(ctx))
 
 	if _, err := p.program.Run(); err != nil {
-		return fmt.Errorf("running UI program: %w", err)
+		return perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to start UI"),
+		)
 	}
 
 	return nil

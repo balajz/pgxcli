@@ -2,7 +2,6 @@ package components
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/balajz/bubbline/editline"
 	"github.com/balajz/bubbline/history"
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/muesli/termenv"
 )
 
@@ -33,7 +33,7 @@ func NewInputModel(prompt, historyFile string, style string, autoCompleter editl
 	}
 
 	if err := applyEditlineConfig(el, historyFile, style); err != nil {
-		return nil, fmt.Errorf("applying input config: %w", err)
+		return nil, err
 	}
 
 	el.AutoComplete = autoCompleter
@@ -78,7 +78,16 @@ func (m *InputModel) SaveHistory() error {
 	if m.HistoryFile == "" {
 		return nil
 	}
-	return history.SaveHistory(m.Model.GetHistory(), m.HistoryFile)
+	if err := history.SaveHistory(m.Model.GetHistory(), m.HistoryFile); err != nil {
+		return perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to save save history"),
+			perrors.WithDetails(
+				"path", m.HistoryFile,
+			),
+		)
+	}
+	return nil
 }
 
 func (m *InputModel) SetPrompt(prompt string) {
@@ -143,7 +152,13 @@ func applyEditlineConfig(el *editline.Model, historyFile string, style string) e
 
 	entries, err := history.LoadHistory(historyFile)
 	if err != nil {
-		return fmt.Errorf("loading history: %w", err)
+		return perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to load history"),
+			perrors.WithDetails(
+				"path",  historyFile,
+			),
+		)
 	}
 
 	el.SetHistory(entries)
