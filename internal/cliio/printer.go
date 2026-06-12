@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/charmbracelet/x/term"
 	"github.com/fatih/color"
 	"github.com/google/shlex"
@@ -135,7 +136,10 @@ func (p *pgxPrinter) PrintViaPager(str string) {
 
 	err := p.echoViaPager(func(w io.Writer) error {
 		_, err := io.WriteString(w, output)
-		return err
+		if err != nil {
+			return perrors.Wrap(err, perrors.WithMessage("failed to write to pager"))
+		}
+		return nil
 	})
 	if err != nil {
 		p.PrintError(err)

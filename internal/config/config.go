@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/spf13/viper"
 )
 
@@ -68,18 +69,32 @@ func Load() (*Config, error) {
 
 	userV := viper.New()
 	userV.SetConfigFile(userPath)
-	if err := userV.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("read user config: %w", err)
+	if err := defaultV.ReadConfig(bytes.NewReader(defaultConfigFile)); err != nil {
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to read config"),
+			perrors.WithDetails(
+				"type", "user",
+			),
+		)
 	}
-
 	// user settings land on top of default settings
 	if err := defaultV.MergeConfigMap(userV.AllSettings()); err != nil {
-		return nil, fmt.Errorf("merge configs: %w", err)
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to merge cofig"),
+		)
 	}
 
 	var cfg Config
 	if err := defaultV.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("unmarshal config: %w", err)
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to unmarshal config"),
+			perrors.WithDetails(
+				"type", "merged",
+			),
+		)
 	}
 
 	if err := validate(cfg); err != nil {
@@ -93,12 +108,24 @@ func GetDefaultConfig() (*Config, error) {
 	defaultV := viper.New()
 	defaultV.SetConfigType("toml")
 	if err := defaultV.ReadConfig(bytes.NewReader(defaultConfigFile)); err != nil {
-		return nil, fmt.Errorf("read default config: %w", err)
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to read config"),
+			perrors.WithDetails(
+				"type", "default",
+			),
+		)
 	}
 
 	var cfg Config
 	if err := defaultV.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("unmarshal config: %w", err)
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to unmarshal config"),
+			perrors.WithDetails(
+				"type", "default",
+			),
+		)
 	}
 	return &cfg, nil
 }
@@ -111,7 +138,10 @@ func UserConfigPath() (string, error) {
 
 	userdir, err := os.UserConfigDir()
 	if err != nil {
-		return "", err
+		return "", perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to get the user config directory"),
+		)
 	}
 	return filepath.Join(userdir, appName, filename), nil
 }
@@ -122,10 +152,23 @@ func ensureUserConfig(path string) error {
 		return nil
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return fmt.Errorf("create config directory: %w", err)
+		return perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to create config directory"),
+			perrors.WithDetails(
+				"path", path,
+			),
+		)
 	}
+
 	if err := os.WriteFile(path, defaultConfigFile, 0o644); err != nil {
-		return fmt.Errorf("write default config: %w", err)
+		return perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to write default config"),
+			perrors.WithDetails(
+				"path", path,
+			),
+		)
 	}
 	return nil
 }
