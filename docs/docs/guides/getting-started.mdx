@@ -116,7 +116,7 @@ pgxcli mydb myuser
 That's it. You'll get a REPL with syntax highlighting, autocompletion, and history — ready to go.
 
 :::tip
-On first run, pgxcli creates a config file at `~/.config/pgxcli/config.toml`. You can customize your prompt, theme, pager, and more. See [Configuration](/docs/guides/configuration).
+On first run, pgxcli creates a config file at `$XDG_CONFIG_HOME/pgxcli/config.toml` when `XDG_CONFIG_HOME` is set, otherwise in the OS-standard user config directory. You can customize your prompt, theme, pager, and more. See [Configuration](/docs/guides/configuration).
 :::
 
 ### Try a Query

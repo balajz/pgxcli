@@ -140,9 +140,9 @@ For full flag documentation, see the [docs][cli-ref].
 
 On first run, a config file is created at:
 
-* `~/.config/pgxcli/config.toml` (or the OS-equivalent user config directory)
+* `$XDG_CONFIG_HOME/pgxcli/config.toml` (or the OS-equivalent user config directory)
 
-For configuration documentation, see the [docs][config-ref]
+For configuration documentation, see the [configuration docs][config-ref].
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
@@ -187,7 +187,7 @@ Thank you for being part of the community! 🙌
 [pgcli-url]: https://github.com/dbcli/pgcli
 [sqls-url]: https://github.com/sqls-server/sqls
 [cockroachdb-url]: https://github.com/cockroachdb/cockroach
-[cli-ref]: https://pgxcli.vercel.app/reference/cli-reference/
-[config-ref]: https://pgxcli.vercel.app/guides/configuration/
+[cli-ref]: https://pgxcli.vercel.app/docs/reference/cli-reference/
+[config-ref]: https://pgxcli.vercel.app/docs/guides/configuration
 [install-ref]: https://pgxcli.vercel.app/docs/guides/getting-started#installation
 [releases-url]: https://github.com/balajz/pgxcli/releases

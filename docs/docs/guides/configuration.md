@@ -8,7 +8,7 @@ sidebar_position: 4
 On first run, pgxcli creates a config file at:
 
 ```
-~/.config/pgxcli/config.toml
+$XDG_CONFIG_HOME/pgxcli/config.toml
 ```
 
 (Or the OS-equivalent user config directory.)
