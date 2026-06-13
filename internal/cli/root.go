@@ -82,7 +82,7 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 		},
 
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
-		if cliCtx.App != nil {
+			if cliCtx.App != nil {
 				if err := cliCtx.App.Close(); err != nil {
 					return err
 				}

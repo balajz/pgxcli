@@ -156,7 +156,7 @@ func applyEditlineConfig(el *editline.Model, historyFile string, style string) e
 			err,
 			perrors.WithMessage("failed to load history"),
 			perrors.WithDetails(
-				"path",  historyFile,
+				"path", historyFile,
 			),
 		)
 	}

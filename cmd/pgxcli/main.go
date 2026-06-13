@@ -9,7 +9,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/balajz/pgxcli/internal/app/renderer"
 	"github.com/balajz/pgxcli/internal/cli"
 	"github.com/balajz/pgxcli/internal/cliio"
 )
@@ -27,7 +26,7 @@ func main() {
 	)
 
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		_ = renderer.Error(err, os.Stderr)
+		printer.PrintError(err)
 		os.Exit(1)
 	}
 }

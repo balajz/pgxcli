@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
 	"runtime"
@@ -13,6 +14,8 @@ import (
 	"syscall"
 	"time"
 
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/list"
 	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/charmbracelet/x/term"
 	"github.com/fatih/color"
@@ -31,6 +34,7 @@ const (
 	pagerModeNever  = "never"
 
 	defaultTerminalHeight = 24
+	defaultTerminalWidth  = 80
 	autoPagerMinBytes     = 4096
 )
 
@@ -51,9 +55,9 @@ type pgxPrinter struct {
 	out    io.Writer
 	errOut io.Writer
 
-	pagerMode      string
-	isTerminal     bool
-	terminalHeight int
+	pagerMode                     string
+	isTerminal                    bool
+	terminalHeight, terminalWidth int
 
 	pagerPath      string
 	pagerArgs      []string
@@ -62,12 +66,19 @@ type pgxPrinter struct {
 
 // NewPgxPrinter creates a printer with pager auto-detection.
 func NewPgxPrinter(out io.Writer, errOut io.Writer) Printer {
+	width, height, err := term.GetSize(os.Stderr.Fd())
+	if err != nil || height <= 0 {
+		height = defaultTerminalHeight
+		width = defaultTerminalWidth
+	}
+
 	p := &pgxPrinter{
 		out:            out,
 		errOut:         errOut,
 		pagerMode:      pagerModeAuto,
 		isTerminal:     term.IsTerminal(os.Stdin.Fd()) && term.IsTerminal(os.Stdout.Fd()),
-		terminalHeight: detectTerminalHeight(os.Stdout.Fd()),
+		terminalHeight: height,
+		terminalWidth:  width,
 		pagerPath:      "",
 		pagerArgs:      nil,
 		pagerSupported: false,
@@ -115,7 +126,52 @@ func (p *pgxPrinter) Print(str string) {
 
 // PrintError writes an error message to the configured error stream.
 func (p *pgxPrinter) PrintError(err error) {
-	printErr(p.errOut, "%v\n", err)
+	de, ok := errors.AsType[perrors.ErrDetailed](err)
+	if !ok {
+		lipgloss.Fprintln(p.errOut,
+			lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				Error.Render("❌ Error"),
+				err.Error(),
+			),
+		)
+		return
+	}
+
+	// Print main error message
+	lipgloss.Fprintln(p.errOut,
+		lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			Error.Render("❌ Error"),
+			err.Error(),
+		),
+	)
+
+	if msgs := de.Messages(); len(msgs) > 0 {
+		l := list.New(msgs).
+			ItemStyle(Detail).
+			Enumerator(list.Roman).
+			EnumeratorStyle(Accent.Margin(0, 1, 0, 2))
+
+		lipgloss.Fprintln(p.errOut, Heading.Render("\nDetails"))
+		lipgloss.Fprintln(p.errOut, l)
+	}
+
+	if details := maps.Collect(de.Details()); len(details) > 0 {
+		lipgloss.Fprintln(os.Stderr, Heading.Render("\nContext"))
+		for k, v := range details {
+			fmt.Fprintln(p.errOut, lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				Accent.MarginLeft(2).Render(k),
+				": ",
+				Detail.Render(fmt.Sprint(v)),
+			))
+		}
+	}
+
+	if output := de.Output(); output != "" {
+		fmt.Fprintf(os.Stderr, "\nOutput:\n%s\n", output)
+	}
 }
 
 // PrintTime prints execution duration in seconds.
@@ -260,14 +316,6 @@ func waitIgnoringInterrupt(w waiter) error {
 		}
 		return err
 	}
-}
-
-func detectTerminalHeight(fd uintptr) int {
-	_, height, err := term.GetSize(fd)
-	if err != nil || height <= 0 {
-		return defaultTerminalHeight
-	}
-	return height
 }
 
 func resolvePagerCommand() (string, []string, bool) {
