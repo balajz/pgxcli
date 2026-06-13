@@ -100,7 +100,7 @@ func TestLoad_InvalidUserConfig(t *testing.T) {
 
 	_, err = Load()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "read user config")
+	assert.Contains(t, err.Error(), "parsing config")
 }
 
 func TestUserConfigPath(t *testing.T) {

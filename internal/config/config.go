@@ -69,7 +69,7 @@ func Load() (*Config, error) {
 
 	userV := viper.New()
 	userV.SetConfigFile(userPath)
-	if err := defaultV.ReadConfig(bytes.NewReader(defaultConfigFile)); err != nil {
+	if err := userV.ReadInConfig(); err != nil {
 		return nil, perrors.Wrap(
 			err,
 			perrors.WithMessage("failed to read config"),
