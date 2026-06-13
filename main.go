@@ -9,6 +9,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/balajz/pgxcli/internal/app"
 	"github.com/balajz/pgxcli/internal/cli"
 	"github.com/balajz/pgxcli/internal/cliio"
 )
@@ -18,11 +19,11 @@ func main() {
 	defer cancel()
 
 	printer := cliio.NewPgxPrinter(os.Stdout, os.Stderr)
-	cliCtx := &cli.CliContext{Printer: printer}
+	appCtx := &app.AppContext{Printer: printer}
 
 	rootCmd := cli.NewRootCmd(
 		ctx,
-		cliCtx,
+		appCtx,
 	)
 
 	if err := rootCmd.ExecuteContext(ctx); err != nil {

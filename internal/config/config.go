@@ -97,10 +97,6 @@ func Load() (*Config, error) {
 		)
 	}
 	cfg.Path = userPath
-
-	if err := Validate(cfg); err != nil {
-		return nil, fmt.Errorf("validate config: %w", err)
-	}
 	return &cfg, nil
 }
 

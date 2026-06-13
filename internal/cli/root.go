@@ -27,7 +27,7 @@ var (
 )
 
 // NewRootCmd builds the root cobra command and wires the CLI lifecycle hooks.
-func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
+func NewRootCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
 	var (
 		debugFlag           debugFlag
 		hostFlag            hostFlag
@@ -48,7 +48,7 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 		SilenceErrors: true,
 
 		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
-			return loadRuntimeDependencies(cliCtx, bool(debugFlag))
+			return loadRuntimeDependencies(appCtx, bool(debugFlag))
 		},
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -64,36 +64,36 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := connectClient(ctx, cliCtx, params, bool(neverPromptFlag), bool(forcePromptFlag)); err != nil {
+			if err := connectClient(ctx, appCtx, params, bool(neverPromptFlag), bool(forcePromptFlag)); err != nil {
 				return err
 			}
-			if err := ensureConnected(cliCtx); err != nil {
+			if err := ensureConnected(appCtx); err != nil {
 				return err
 			}
-			return initApplication(cliCtx)
+			return initApplication(appCtx)
 		},
 
 		RunE: func(_ *cobra.Command, _ []string) error {
-			if cliCtx.App == nil {
-				cliCtx.Logger.Error("Application context not initialized")
+			if appCtx.App == nil {
+				appCtx.Logger.Error("Application context not initialized")
 				return fmt.Errorf("application context not initialized")
 			}
-			return cliCtx.App.Start(ctx)
+			return appCtx.App.Start(ctx)
 		},
 
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
-			if cliCtx.App != nil {
-				if err := cliCtx.App.Close(); err != nil {
+			if appCtx.App != nil {
+				if err := appCtx.App.Close(); err != nil {
 					return err
 				}
 			}
-			if cliCtx.Client != nil {
-				if err := cliCtx.Client.Close(ctx); err != nil {
+			if appCtx.Client != nil {
+				if err := appCtx.Client.Close(ctx); err != nil {
 					return err
 				}
 			}
-			if cliCtx.Logger != nil {
-				if err := cliCtx.Logger.Close(); err != nil {
+			if appCtx.Logger != nil {
+				if err := appCtx.Logger.Close(); err != nil {
 					return err
 				}
 			}
@@ -129,14 +129,14 @@ type connectionParams struct {
 }
 
 // loadRuntimeDependencies loads configuration, initializes logger, and sets up pager.
-func loadRuntimeDependencies(cliCtx *CliContext, debug bool) error {
+func loadRuntimeDependencies(appCtx *app.AppContext, debug bool) error {
 	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}
-	cliCtx.config = cfg
+	appCtx.Config = cfg
 
-	if err := cliCtx.Printer.SetPagerMode(cfg.Main.Pager); err != nil { // Printer is initialized in main.go.
+	if err := appCtx.Printer.SetPagerMode(cfg.Main.Pager); err != nil { // Printer is initialized in main.go.
 		return err
 	}
 
@@ -144,7 +144,7 @@ func loadRuntimeDependencies(cliCtx *CliContext, debug bool) error {
 	if err != nil {
 		return err
 	}
-	cliCtx.Logger = initializedLogger
+	appCtx.Logger = initializedLogger
 
 	return nil
 }
@@ -239,30 +239,30 @@ func resolveInteractiveConnectionParams(
 
 func connectClient(
 	ctx context.Context,
-	cliCtx *CliContext,
+	appCtx *app.AppContext,
 	params connectionParams,
 	neverPrompt bool,
 	forcePrompt bool,
 ) error {
-	cliCtx.Client = database.New(cliCtx.Logger.Logger)
+	appCtx.Client = database.New(appCtx.Logger.Logger)
 
 	if strings.Contains(params.database, "://") || strings.Contains(params.database, "=") {
-		return connectWithConnString(ctx, cliCtx, params.database)
+		return connectWithConnString(ctx, appCtx, params.database)
 	}
 
-	return connectWithFields(ctx, cliCtx, params, neverPrompt, forcePrompt)
+	return connectWithFields(ctx, appCtx, params, neverPrompt, forcePrompt)
 }
 
-func connectWithConnString(ctx context.Context, cliCtx *CliContext, connString string) error {
+func connectWithConnString(ctx context.Context, appCtx *app.AppContext, connString string) error {
 	connector, err := database.NewPGConnectorFromConnString(connString)
 	if err != nil {
-		cliCtx.Logger.Error("Invalid Connection string", "error", err)
+		appCtx.Logger.Error("Invalid Connection string", "error", err)
 		return err
 	}
 
-	cliCtx.Logger.Debug("Attempting database connection using connection string")
-	if err := cliCtx.Client.Connect(ctx, connector); err != nil {
-		cliCtx.Logger.Error("Failed to connect to database", "error", err)
+	appCtx.Logger.Debug("Attempting database connection using connection string")
+	if err := appCtx.Client.Connect(ctx, connector); err != nil {
+		appCtx.Logger.Error("Failed to connect to database", "error", err)
 		return err
 	}
 
@@ -271,14 +271,14 @@ func connectWithConnString(ctx context.Context, cliCtx *CliContext, connString s
 
 func connectWithFields(
 	ctx context.Context,
-	cliCtx *CliContext,
+	appCtx *app.AppContext,
 	params connectionParams,
 	neverPrompt bool,
 	forcePrompt bool,
 ) error {
 	password := params.password
 
-	cliCtx.Logger.Debug("using field-based connection",
+	appCtx.Logger.Debug("using field-based connection",
 		"host", params.host,
 		"port", params.port,
 		"database", params.database,
@@ -305,22 +305,22 @@ func connectWithFields(
 		params.port,
 	)
 	if err != nil {
-		cliCtx.Logger.Error("Failed to create connector", "error", err)
+		appCtx.Logger.Error("Failed to create connector", "error", err)
 		return err
 	}
 
-	cliCtx.Logger.Debug("Attempting database connection")
-	connErr := cliCtx.Client.Connect(ctx, connector)
+	appCtx.Logger.Debug("Attempting database connection")
+	connErr := appCtx.Client.Connect(ctx, connector)
 	if connErr == nil {
 		return nil
 	}
 
 	if !shouldAskForPassword(connErr, neverPrompt) {
-		cliCtx.Logger.Error("Failed to connect to database", "error", connErr)
+		appCtx.Logger.Error("Failed to connect to database", "error", connErr)
 		return connErr
 	}
 
-	cliCtx.Logger.Debug("Connection failed, prompting for password")
+	appCtx.Logger.Debug("Connection failed, prompting for password")
 	prompt := "Enter password"
 	if password != "" {
 		if wErr := renderer.Error(
@@ -338,34 +338,34 @@ func connectWithFields(
 	}
 
 	connector.UpdatePassword(pwd)
-	if connRetryErr := cliCtx.Client.Connect(ctx, connector); connRetryErr != nil {
-		cliCtx.Logger.Error("Connection retry failed", "error", connRetryErr)
+	if connRetryErr := appCtx.Client.Connect(ctx, connector); connRetryErr != nil {
+		appCtx.Logger.Error("Connection retry failed", "error", connRetryErr)
 		return connRetryErr
 	}
 
 	return nil
 }
 
-func ensureConnected(cliCtx *CliContext) error {
-	if cliCtx.Client.IsConnected() {
+func ensureConnected(appCtx *app.AppContext) error {
+	if appCtx.Client.IsConnected() {
 		return nil
 	}
 
 	err := fmt.Errorf("failed to connect to database")
-	cliCtx.Logger.Error("Failed to connect to database", "error", err)
+	appCtx.Logger.Error("Failed to connect to database", "error", err)
 	return err
 }
 
 // initApplication Initializes the app,
 // which includes setting up the logger, config and database client.
-func initApplication(cliCtx *CliContext) error {
-	pgxCLI, err := app.New(cliCtx.config, cliCtx.Printer, cliCtx.Logger.Logger, cliCtx.Client, version)
+func initApplication(appCtx *app.AppContext) error {
+	pgxCLI, err := app.New(appCtx.Config, appCtx.Printer, appCtx.Logger.Logger, appCtx.Client, version)
 	if err != nil {
-		cliCtx.Logger.Error("Failed to initialize app", "error", err)
+		appCtx.Logger.Error("Failed to initialize app", "error", err)
 		return err
 	}
 
-	cliCtx.App = pgxCLI
+	appCtx.App = pgxCLI
 	return nil
 }
 
