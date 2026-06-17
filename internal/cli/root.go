@@ -17,6 +17,7 @@ import (
 	"github.com/balajz/pgxcli/internal/config"
 	"github.com/balajz/pgxcli/internal/database"
 	"github.com/balajz/pgxcli/internal/logger"
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/spf13/cobra"
 )
 
@@ -81,8 +82,8 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 		},
 
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
-			if cliCtx.Logger != nil {
-				if err := cliCtx.Logger.Close(); err != nil {
+			if cliCtx.App != nil {
+				if err := cliCtx.App.Close(); err != nil {
 					return err
 				}
 			}
@@ -91,8 +92,8 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 					return err
 				}
 			}
-			if cliCtx.App != nil {
-				if err := cliCtx.App.Close(); err != nil {
+			if cliCtx.Logger != nil {
+				if err := cliCtx.Logger.Close(); err != nil {
 					return err
 				}
 			}
@@ -408,7 +409,11 @@ func promptPassword(s string) (string, error) {
 	if !term.IsTerminal(fd) {
 		pwd, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err != nil {
-			return "", err
+			return "", perrors.Wrap(
+				err,
+				perrors.WithMessage("failed to read password"),
+				perrors.WithDetails("terminal", false),
+			)
 		}
 		return strings.TrimRight(pwd, "\r\n"), nil
 	}
@@ -416,7 +421,11 @@ func promptPassword(s string) (string, error) {
 	pwd, err := term.ReadPassword(fd)
 	fmt.Println()
 	if err != nil {
-		return "", err
+		return "", perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to read password"),
+			perrors.WithDetails("terminal", true),
+		)
 	}
 	return string(pwd), nil
 }
@@ -424,7 +433,11 @@ func promptPassword(s string) (string, error) {
 func mustParsePort(port string) (uint16, error) {
 	portNum, err := strconv.Atoi(port)
 	if err != nil {
-		return 0, err
+		return 0, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to parse port"),
+			perrors.WithDetails("port", port),
+		)
 	}
 	return uint16(portNum), nil
 }

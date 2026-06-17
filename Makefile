@@ -1,4 +1,4 @@
-MAIN_PATH = "cmd/pgxcli/main.go"
+MAIN_PATH = "main.go"
 BUILD_PATH = "bin"
 TIMEOUT = 60
 
@@ -11,7 +11,7 @@ build:
 
 fmt:
 	@echo "Formatting code..."
-	@gofmt -w ./cmd ./internal
+	@gofmt -w .
 	@echo "✓ Code formatted"
 
 vet:

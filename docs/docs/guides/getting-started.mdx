@@ -74,7 +74,7 @@ Pick your operating system or preferred installation method:
     Make sure you have **Go 1.26.4+**.
 
     ```bash
-    go install github.com/balajz/pgxcli/cmd/pgxcli@latest
+    go install github.com/balajz/pgxcli@latest
     ```
   </TabItem>
   <TabItem value="docker" label="Docker">
@@ -116,7 +116,7 @@ pgxcli mydb myuser
 That's it. You'll get a REPL with syntax highlighting, autocompletion, and history — ready to go.
 
 :::tip
-On first run, pgxcli creates a config file at `~/.config/pgxcli/config.toml`. You can customize your prompt, theme, pager, and more. See [Configuration](/docs/guides/configuration).
+On first run, pgxcli creates a config file at `$XDG_CONFIG_HOME/pgxcli/config.toml` when `XDG_CONFIG_HOME` is set, otherwise in the OS-standard user config directory. You can customize your prompt, theme, pager, and more. See [Configuration](/docs/guides/configuration).
 :::
 
 ### Try a Query

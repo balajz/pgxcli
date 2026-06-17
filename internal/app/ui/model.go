@@ -17,6 +17,7 @@ import (
 	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/balajz/bubbline/editline"
 	"github.com/balajz/pgxcli/internal/app/ui/components"
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/muesli/termenv"
 )
@@ -78,7 +79,7 @@ type Model struct {
 func New(initialPrefix string, historyFile string, style string, version string, executeFunc execute, cancelFunc cancel, autocompleter editline.AutoCompleteFn) (*Model, error) {
 	inputModel, err := components.NewInputModel(initialPrefix, historyFile, style, autocompleter)
 	if err != nil {
-		return nil, fmt.Errorf("creating input model: %w", err)
+		return nil, err
 	}
 
 	styles := DefaultStyles()
@@ -93,7 +94,10 @@ func New(initialPrefix string, historyFile string, style string, version string,
 	if _, ok := os.LookupEnv("PGXCLI_DEBUG"); ok {
 		dump, err = os.OpenFile("pgxcli_messages.log", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
 		if err != nil {
-			return nil, fmt.Errorf("opening debug log: %w", err)
+			return nil, perrors.Wrap(
+				err,
+				perrors.WithMessage("failed to debug UI"),
+			)
 		}
 	}
 
@@ -336,18 +340,11 @@ func (m *Model) View() tea.View {
 	return tea.NewView(baseView)
 }
 
-func (m *Model) saveHistory() error {
-	return m.input.SaveHistory()
-}
-
 func (m *Model) Close() error {
 	if m.dump != nil {
 		_ = m.dump.Close()
 	}
-	if err := m.saveHistory(); err != nil {
-		return fmt.Errorf("saving history: %w", err)
-	}
-	return nil
+	return m.input.SaveHistory()
 }
 
 // PrintCmd returns a command that prints formatted text.

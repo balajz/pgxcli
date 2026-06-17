@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -25,7 +26,10 @@ type pgConnector struct {
 func NewPGConnectorFromConnString(connString string) (Connector, error) {
 	cfg, err := pgx.ParseConfig(connString)
 	if err != nil {
-		return nil, err
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("invalid PostgreSQL connection string"),
+		)
 	}
 
 	return &pgConnector{cfg: cfg}, nil
@@ -35,7 +39,10 @@ func NewPGConnectorFromConnString(connString string) (Connector, error) {
 func NewPGConnectorFromFields(host, database, user, password string, port uint16) (Connector, error) {
 	cfg, err := pgx.ParseConfig("")
 	if err != nil {
-		return nil, err
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("invalid PostgreSQL connection string"),
+		)
 	}
 
 	checkAndSet := func(field *string, value string) {
@@ -54,16 +61,6 @@ func NewPGConnectorFromFields(host, database, user, password string, port uint16
 	return &pgConnector{cfg: cfg}, nil
 }
 
-// UpdatePassword updates the password on the underlying connection config.
-func (c *pgConnector) UpdatePassword(newPassword string) {
-	c.cfg.Password = newPassword
-}
-
-// Password returns the password from the underlying connection config.
-func (c *pgConnector) Password() string {
-	return c.cfg.Password
-}
-
 // Connect opens a new pgx connection using the connector configuration.
 func (c *pgConnector) Connect(ctx context.Context) (*pgx.Conn, error) {
 	c.cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
@@ -77,12 +74,31 @@ func (c *pgConnector) Connect(ctx context.Context) (*pgx.Conn, error) {
 
 	conn, err := pgx.ConnectConfig(ctx, c.cfg)
 	if err != nil {
-		return nil, err
+		return nil, perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to connect to PostgreSQL"),
+			perrors.WithDetails(
+				"user", c.cfg.User,
+				"database", c.cfg.Database,
+				"host", c.cfg.Host,
+				"port", c.cfg.Port,
+			),
+		)
 	}
 
 	conn.TypeMap().RegisterTypes(customTypes())
 
 	return conn, nil
+}
+
+// UpdatePassword updates the password on the underlying connection config.
+func (c *pgConnector) UpdatePassword(newPassword string) {
+	c.cfg.Password = newPassword
+}
+
+// Password returns the password from the underlying connection config.
+func (c *pgConnector) Password() string {
+	return c.cfg.Password
 }
 
 func customTypes() []*pgtype.Type {

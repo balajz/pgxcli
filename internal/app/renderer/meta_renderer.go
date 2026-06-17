@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/balajz/pgxcli/internal/config"
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/balajz/pgxcli/pgxspecial"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
@@ -30,7 +31,7 @@ func Table(data Data, w io.Writer, c *config.Config) error {
 
 	t.Header(data.Columns())
 	if err := t.Bulk(rows); err != nil {
-		return err
+		return perrors.Wrap(err, perrors.WithMessage("failed to bulk append rows to table"))
 	}
 
 	if captionText := data.Caption(); captionText != "" {
@@ -41,7 +42,10 @@ func Table(data Data, w io.Writer, c *config.Config) error {
 		}
 		t.Caption(caption)
 	}
-	return t.Render()
+	if err := t.Render(); err != nil {
+		return perrors.Wrap(err, perrors.WithMessage("failed to render table"))
+	}
+	return nil
 }
 
 type rowsTableResult interface {

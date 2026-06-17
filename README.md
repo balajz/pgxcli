@@ -106,7 +106,7 @@ docker run -it --rm ghcr.io/balajz/pgxcli:v0.3.0 postgres://user:pass@host:5432/
 #### Go Install
 If you have Go installed, you can install directly:
 ```bash
-go install github.com/balajz/pgxcli/cmd/pgxcli@latest
+go install github.com/balajz/pgxcli@latest
 ```
 
 For more details, see the [Installation Guide][install-ref].
@@ -140,9 +140,9 @@ For full flag documentation, see the [docs][cli-ref].
 
 On first run, a config file is created at:
 
-* `~/.config/pgxcli/config.toml` (or the OS-equivalent user config directory)
+* `$XDG_CONFIG_HOME/pgxcli/config.toml` (or the OS-equivalent user config directory)
 
-For configuration documentation, see the [docs][config-ref]
+For configuration documentation, see the [configuration docs][config-ref].
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
@@ -187,7 +187,7 @@ Thank you for being part of the community! 🙌
 [pgcli-url]: https://github.com/dbcli/pgcli
 [sqls-url]: https://github.com/sqls-server/sqls
 [cockroachdb-url]: https://github.com/cockroachdb/cockroach
-[cli-ref]: https://pgxcli.vercel.app/reference/cli-reference/
-[config-ref]: https://pgxcli.vercel.app/guides/configuration/
+[cli-ref]: https://pgxcli.vercel.app/docs/reference/cli-reference/
+[config-ref]: https://pgxcli.vercel.app/docs/guides/configuration
 [install-ref]: https://pgxcli.vercel.app/docs/guides/getting-started#installation
 [releases-url]: https://github.com/balajz/pgxcli/releases

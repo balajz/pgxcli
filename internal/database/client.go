@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/balajz/pgxcli/internal/perrors"
 	"github.com/balajz/pgxcli/pgxspecial"
 	compDB "github.com/balajz/pgxls/pkg/database"
 )
@@ -218,8 +219,19 @@ func (c *Client) Cache(worker *compDB.Worker) error {
 
 // Close closes the current database connection if one exists.
 func (c *Client) Close(ctx context.Context) error {
-	if c.executor != nil {
-		return c.executor.close(ctx)
+	if c.executor == nil {
+		return nil
 	}
+
+	if err := c.executor.close(ctx); err != nil {
+		return perrors.Wrap(
+			err,
+			perrors.WithMessage("failed to close connection"),
+			perrors.WithDetails(
+				"conn", c.executor.conn.Config().ConnString(),
+			),
+		)
+	}
+
 	return nil
 }

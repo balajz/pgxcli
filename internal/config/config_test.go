@@ -100,7 +100,7 @@ func TestLoad_InvalidUserConfig(t *testing.T) {
 
 	_, err = Load()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "read user config")
+	assert.Contains(t, err.Error(), "parsing config")
 }
 
 func TestUserConfigPath(t *testing.T) {
@@ -108,6 +108,15 @@ func TestUserConfigPath(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, path)
 	assert.Contains(t, path, appName)
+}
+
+func TestUserConfigPath_UsesXDGConfigHomeWhenSet(t *testing.T) {
+	tempDir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", tempDir)
+
+	path, err := UserConfigPath()
+	require.NoError(t, err)
+	assert.Equal(t, filepath.Join(tempDir, appName, filename), path)
 }
 
 func TestEnsureUserConfig_CreatesConfigOnFirstRun(t *testing.T) {
