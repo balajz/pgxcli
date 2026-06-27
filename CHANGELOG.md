@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+- **clean errors**: Use lipgloss for error formatting and styling, adding custom error packages (#96).
+- **XDG_CONFIG_HOME support**: Respect `XDG_CONFIG_HOME` for config path resolution (#94).
+- **Double ESC to clear input**: Added the ability to clear the input by pressing ESC twice (#91).
+- **Double Ctrl+C to quit**: Added the ability to quit the CLI by pressing Ctrl+C twice (#95).
+
+
 ## [0.3.0] - 2026-05-27
 
 ### Added
