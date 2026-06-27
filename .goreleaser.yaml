@@ -18,7 +18,7 @@ before:
 
 builds:
   - id: linux
-    main: ./cmd/pgxcli
+    main: .
     binary: pgxcli
     goos: [linux]
     goarch: [amd64, arm64]
@@ -30,7 +30,7 @@ builds:
       - -X main.commit={{.Commit}}
 
   - id: darwin
-    main: ./cmd/pgxcli
+    main: .
     binary: pgxcli
     goos: [darwin]
     goarch: [amd64, arm64]
@@ -42,7 +42,7 @@ builds:
       - -X main.commit={{.Commit}}
 
   - id: windows
-    main: ./cmd/pgxcli
+    main: .
     binary: pgxcli
     goos: [windows]
     goarch: [amd64]
