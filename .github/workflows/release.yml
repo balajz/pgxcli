@@ -55,7 +55,6 @@ jobs:
           go build `
             -ldflags "-s -w -X main.version=$VERSION -X main.commit=$env:GITHUB_SHA" `
             -o build/windows/amd64/pgxcli.exe `
-            ./cmd/pgxcli
 
       - name: Set up MSBuild
         id: setupmsbuild 
