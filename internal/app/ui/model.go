@@ -29,8 +29,8 @@ type State int
 const (
 	StateInput State = iota
 	StateExecuting
-    StatePendingClear
-    StatePendingQuit
+	StatePendingClear
+	StatePendingQuit
 )
 
 // ReadyMsg signals the ui that execution is done and it should prompt.
@@ -187,57 +187,57 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
-    	if (m.state == StatePendingClear || m.state == StatePendingQuit) &&
-    	    !key.Matches(msg, m.keys.Clear) &&
-    	    !key.Matches(msg, m.keys.Interrupt) {
-    	    m.state = StateInput
-    	}
+		if (m.state == StatePendingClear || m.state == StatePendingQuit) &&
+			!key.Matches(msg, m.keys.Clear) &&
+			!key.Matches(msg, m.keys.Interrupt) {
+			m.state = StateInput
+		}
 
-    	if key.Matches(msg, m.keys.Quit) {
-    	    return m, func() tea.Msg {
-    	        return QuitRequestMsg{}
-    	    }
-    	}
-    	if key.Matches(msg, m.keys.Interrupt) {
-    	    if m.state == StateExecuting {
-    	        m.state = StateInput
-    	        cancelFn := m.cancel
-    	        return m, func() tea.Msg {
-    	            if err := cancelFn(context.Background()); err != nil {
-    	                return ExecCmdMsg{Cmd: PrintErrCmd(err, m.styles.ErrorOutput)}
-    	            }
-    	            return nil
-    	        }
-    	    }
-    	    if m.state == StatePendingQuit {
-    	        m.state = StateInput
-    	        return m, func() tea.Msg {
-    	            return QuitRequestMsg{}
-    	        }
-    	    }
-    	    m.state = StatePendingQuit
-    	    m.pendingSeq++
-    	    n := m.pendingSeq
-    	    return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
-    	        return seqTimeoutMsg{seq: n}
-    	    })
-    	}
-    	if key.Matches(msg, m.keys.Clear) {
-    	    if m.state == StateExecuting {
-    	        return m, nil
-    	    }
-    	    if m.state == StatePendingClear {
-    	        m.state = StateInput
-    	        m.input.Reset()
-    	        return m, nil
-    	    }
-    	    m.state = StatePendingClear
-    	    m.pendingSeq++
-    	    n := m.pendingSeq
-    	    return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
-    	        return seqTimeoutMsg{seq: n}
-    	    })
-    	}
+		if key.Matches(msg, m.keys.Quit) {
+			return m, func() tea.Msg {
+				return QuitRequestMsg{}
+			}
+		}
+		if key.Matches(msg, m.keys.Interrupt) {
+			if m.state == StateExecuting {
+				m.state = StateInput
+				cancelFn := m.cancel
+				return m, func() tea.Msg {
+					if err := cancelFn(context.Background()); err != nil {
+						return ExecCmdMsg{Cmd: PrintErrCmd(err, m.styles.ErrorOutput)}
+					}
+					return nil
+				}
+			}
+			if m.state == StatePendingQuit {
+				m.state = StateInput
+				return m, func() tea.Msg {
+					return QuitRequestMsg{}
+				}
+			}
+			m.state = StatePendingQuit
+			m.pendingSeq++
+			n := m.pendingSeq
+			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
+				return seqTimeoutMsg{seq: n}
+			})
+		}
+		if key.Matches(msg, m.keys.Clear) {
+			if m.state == StateExecuting {
+				return m, nil
+			}
+			if m.state == StatePendingClear {
+				m.state = StateInput
+				m.input.Reset()
+				return m, nil
+			}
+			m.state = StatePendingClear
+			m.pendingSeq++
+			n := m.pendingSeq
+			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
+				return seqTimeoutMsg{seq: n}
+			})
+		}
 	}
 	// Route to input only if in input state, avoiding capturing keystrokes while executing.
 	if m.state == StateInput {
