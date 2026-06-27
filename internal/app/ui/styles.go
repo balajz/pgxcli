@@ -49,7 +49,6 @@ func DefaultStyles() Styles {
 			Faint(true),
 		StatusBar: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#C4B5FD")).
-			Background(lipgloss.Color("#2A273F")).
 			Padding(0, 1),
 		ClampNotice: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#A78BFA")).
