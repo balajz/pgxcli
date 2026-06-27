@@ -7,8 +7,17 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-// StatusModel manages the status bar and the executing spinner.
+// MessageUpdateMsg is used to update the message in the status bar
+type MessageUpdateMsg struct {
+	Message string
+}
+
+// MessageResetMsg is used to reset the message in the status bar
+type MessageResetMsg struct{}
+
+// StatusModel manages the status bar and the executing spinner
 type StatusModel struct {
+	Message        string
 	Version        string
 	Width          int
 	IssueLink      string
@@ -32,6 +41,10 @@ func (m StatusModel) Update(msg tea.Msg) (StatusModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Width = msg.Width
+	case MessageUpdateMsg:
+		m.Message = msg.Message
+	case MessageResetMsg:
+		m.Message = ""
 	}
 	return m, cmd
 }
@@ -63,7 +76,14 @@ func (m StatusModel) View() string {
 	}
 	padding := strings.Repeat(" ", paddingWidth)
 
-	statusBar := m.StatusBarStyle.Width(m.Width).Render(name + padding + link)
+	firstLine := m.StatusBarStyle.Faint(true).Render(m.Message)
+	secondLine := m.StatusBarStyle.Render(lipgloss.Sprintf("%s%s%s", name, padding, link))
+
+	statusBar := lipgloss.JoinVertical(
+		lipgloss.Top,
+		firstLine,
+		secondLine,
+	)
 
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
@@ -75,8 +95,7 @@ func (m StatusModel) View() string {
 // StaticHeight returns the height of the footer.
 func (m StatusModel) StaticHeight() int {
 	separator := m.SeparatorStyle.Render(strings.Repeat("─", m.Width))
-	statusBar := m.StatusBarStyle.Width(m.Width).Render("pgxcli " + m.Version)
 
-	// Top separator + Bottom separator + Status bar
-	return lipgloss.Height(separator)*2 + lipgloss.Height(statusBar)
+	// Top separator + Bottom separator + message line + version line
+	return lipgloss.Height(separator)*2 + 2
 }
