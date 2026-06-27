@@ -182,6 +182,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case seqTimeoutMsg:
 		if msg.seq == m.pendingSeq {
+			m.statusModel, _ = m.statusModel.Update(components.MessageResetMsg{}) // reset status message
 			m.state = StateInput
 		}
 		return m, nil
@@ -218,6 +219,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = StatePendingQuit
 			m.pendingSeq++
 			n := m.pendingSeq
+			m.statusModel, _ = m.statusModel.Update(components.MessageUpdateMsg{Message: "Press Ctrl+C again to quit"})
 			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
 				return seqTimeoutMsg{seq: n}
 			})
@@ -234,6 +236,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = StatePendingClear
 			m.pendingSeq++
 			n := m.pendingSeq
+			m.statusModel, _ = m.statusModel.Update(components.MessageUpdateMsg{Message: "Press ESC again to clear"})
 			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
 				return seqTimeoutMsg{seq: n}
 			})
