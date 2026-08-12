@@ -3,6 +3,7 @@
 package cliio
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -47,6 +48,7 @@ type Printer interface {
 	PrintError(err error)
 	PrintTime(time time.Duration)
 	PrintViaPager(str string)
+	StreamViaPager(writeFn func(io.Writer) error) error
 	ShouldUsePager(str string) bool
 }
 
@@ -203,6 +205,102 @@ func (p *pgxPrinter) PrintViaPager(str string) {
 	})
 	if err != nil {
 		p.PrintError(err)
+	}
+}
+
+// StreamViaPager sends output directly to the configured destination or pager
+// without first building the complete result in memory. Auto pager mode uses a
+// temporary file only when it must measure the output before choosing a pager.
+func (p *pgxPrinter) StreamViaPager(writeFn func(io.Writer) error) error {
+	if p.pagerMode == pagerModeAlways && p.isTerminal && p.pagerSupported {
+		if p.tryPipePager(writeFn) || p.tryTempfilePager(writeFn) {
+			return nil
+		}
+	}
+
+	if p.pagerMode != pagerModeAuto || !p.isTerminal || !p.pagerSupported {
+		return writeFn(p.out)
+	}
+
+	tmp, err := os.CreateTemp("", "pgxcli-output-*")
+	if err != nil {
+		return writeFn(p.out)
+	}
+	tmpName := tmp.Name()
+	defer func() {
+		_ = os.Remove(tmpName)
+	}()
+
+	if err := writeFn(tmp); err != nil {
+		_ = tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+
+	file, err := os.Open(tmpName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	lines, err := countFileLines(file)
+	if err != nil {
+		return err
+	}
+	if !p.shouldUsePagerMetrics(info.Size(), lines) {
+		_, err = io.Copy(p.out, file)
+		return err
+	}
+
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+	cmd := exec.Command(p.pagerPath, p.pagerArgs...)
+	cmd.Stdin = file
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return waitIgnoringInterrupt(cmd)
+}
+
+func countFileLines(file *os.File) (int, error) {
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return 0, err
+	}
+	buf := make([]byte, 32*1024)
+	lines := 0
+	for {
+		n, err := file.Read(buf)
+		lines += bytes.Count(buf[:n], []byte{'\n'})
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return 0, err
+		}
+	}
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return 0, err
+	}
+	return lines, nil
+}
+
+func (p *pgxPrinter) shouldUsePagerMetrics(size int64, lines int) bool {
+	switch p.pagerMode {
+	case pagerModeNever:
+		return false
+	case pagerModeAlways:
+		return p.isTerminal && p.pagerSupported
+	default:
+		if !p.isTerminal || !p.pagerSupported {
+			return false
+		}
+		return size >= autoPagerMinBytes || lines > p.autoPagerLineThreshold()
 	}
 }
 

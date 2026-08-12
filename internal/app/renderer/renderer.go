@@ -14,6 +14,15 @@ type Formatter interface {
 	Done(w io.Writer) error
 }
 
+// StreamingFormatter can switch from table buffering to bounded row output
+// once a result exceeds the in-memory formatting limit.
+type StreamingFormatter interface {
+	Formatter
+	StartStreaming(w io.Writer, cols []string, bufferedRows [][]string) error
+}
+
+const bufferedRowLimit = 500
+
 func TableRender(cols []string, rowrowIter RowStrIter, caption string, w, Ew io.Writer, c *config.Config) error {
 	tf := formatter.NewTableFormatter(w, &c.Table)
 	return Render(w, Ew, tf, cols, rowrowIter)
@@ -24,6 +33,9 @@ func Render(w, Ew io.Writer, formatter Formatter, cols []string, row RowStrIter)
 		return err
 	}
 
+	streamingFormatter, canStream := formatter.(StreamingFormatter)
+	bufferedRows := make([][]string, 0, bufferedRowLimit)
+	streaming := false
 	nRows := 0
 	for {
 		r, err := row.Next()
@@ -34,8 +46,19 @@ func Render(w, Ew io.Writer, formatter Formatter, cols []string, row RowStrIter)
 			return err
 		}
 
+		if canStream && !streaming && len(bufferedRows) >= bufferedRowLimit {
+			if err := streamingFormatter.StartStreaming(w, cols, bufferedRows); err != nil {
+				return err
+			}
+			bufferedRows = nil
+			streaming = true
+		}
+
 		if err := formatter.Iter(w, Ew, r); err != nil {
 			return err
+		}
+		if canStream && !streaming {
+			bufferedRows = append(bufferedRows, append([]string(nil), r...))
 		}
 		nRows++
 	}

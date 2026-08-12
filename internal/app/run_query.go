@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"strings"
+	"io"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -53,41 +53,40 @@ StatementsLoop:
 }
 
 func (p *pgxCLI) handleQueryResult(r database.Rows, execDuration time.Duration) (cmd tea.Cmd, err error) {
-	var s strings.Builder
-
 	cols := renderer.GetColumnStrings(r, true)
-	if len(cols) > 0 {
-		rowIter := renderer.NewRowIter(r, true)
-		if err := renderer.TableRender(cols, rowIter, "", &s, &s, p.config); err != nil {
-			r.Close() // Ensure closed on error
-			return nil, err
+	return func() tea.Msg {
+		streamErr := p.Printer.StreamViaPager(func(w io.Writer) error {
+			if len(cols) > 0 {
+				rowIter := renderer.NewRowIter(r, true)
+				if err := renderer.TableRender(cols, rowIter, "", w, w, p.config); err != nil {
+					_ = r.Close()
+					return err
+				}
+			}
+
+			// We must close the rows before reading the tag.
+			if closeErr := r.Close(); closeErr != nil {
+				return closeErr
+			}
+
+			tag, err := r.Tag()
+			if err != nil {
+				return err
+			}
+			tagStr := tag.String()
+			if tagStr == "" {
+				tagStr = "OK"
+			}
+			if _, err := fmt.Fprintln(w, tagStr); err != nil {
+				return err
+			}
+			_, err = fmt.Fprintf(w, "Time %.3fs\n", execDuration.Seconds())
+			return err
+		})
+		if streamErr != nil {
+			p.logger.Error("error streaming query result", "error", streamErr)
+			return ui.PrintErrCmd(streamErr, ui.DefaultStyles().ErrorOutput)
 		}
-	}
-
-	// We must close the rows before reading the tag
-	if closeErr := r.Close(); closeErr != nil {
-		return nil, closeErr
-	}
-
-	tag, err := r.Tag()
-	if err != nil {
-		return nil, err
-	}
-	tagStr := tag.String()
-	if tagStr == "" {
-		tagStr = "OK"
-	}
-
-	output := s.String()
-	if len(cols) == 0 {
-		output = tagStr
-	} else {
-		output += tagStr
-	}
-
-	// Append timing info to the output
-	timingInfo := fmt.Sprintf("\nTime %.3fs", execDuration.Seconds())
-	output += timingInfo
-
-	return p.printViaPager(output), nil
+		return nil
+	}, nil
 }

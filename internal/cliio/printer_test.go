@@ -109,3 +109,19 @@ func TestPrintViaPager_AppendsNewlineWhenNotPresent(t *testing.T) {
 	p.PrintViaPager("SELECT 9")
 	assert.Equal(t, "SELECT 9\n", out.String())
 }
+
+func TestStreamViaPager_WritesWithoutBuildingOutputString(t *testing.T) {
+	out := &bytes.Buffer{}
+	p := &pgxPrinter{
+		out:       out,
+		errOut:    io.Discard,
+		pagerMode: pagerModeNever,
+	}
+
+	err := p.StreamViaPager(func(w io.Writer) error {
+		_, err := io.WriteString(w, "header\nrow\n")
+		return err
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "header\nrow\n", out.String())
+}
