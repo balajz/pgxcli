@@ -78,7 +78,12 @@ func NewRootCmd(ctx context.Context, cliCtx *CliContext) *cobra.Command {
 				cliCtx.Logger.Error("Application context not initialized")
 				return fmt.Errorf("application context not initialized")
 			}
-			return cliCtx.App.Start(ctx)
+			if err := cliCtx.App.Start(ctx); err != nil {
+				return err
+			}
+			cliCtx.Printer.Println("Thanks for using Pgxcli.")
+			cliCtx.Printer.Println("see you next time.")
+			return nil
 		},
 
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {

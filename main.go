@@ -29,7 +29,4 @@ func main() {
 		printer.PrintError(err)
 		os.Exit(1)
 	}
-
-	printer.Println("Thanks for using Pgxcli.")
-	printer.Println("see you next time.")
 }
