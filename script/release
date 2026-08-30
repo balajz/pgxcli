@@ -42,17 +42,43 @@ done
 
 goreleaser_config=".goreleaser.yaml"
 
+filter_goreleaser_config() {
+  local build_id="$1"
+  local output_file="$2"
+
+  awk -v selected_build="$build_id" '
+    /^builds:/ {
+      in_builds = 1
+      print
+      next
+    }
+    in_builds && /^[^[:space:]]/ {
+      in_builds = 0
+      keep_build = 1
+      print
+      next
+    }
+    in_builds && /^  - id: / {
+      keep_build = ($3 == selected_build)
+      if (keep_build) print
+      next
+    }
+    in_builds && !keep_build { next }
+    { print }
+  ' .goreleaser.yaml >"$output_file"
+}
+
 case "$platform" in
 linux )
-  sed '/#build:macos/,/^$/d; /#build:windows/,/^$/d' .goreleaser.yaml >.goreleaser.generated.yaml
+  filter_goreleaser_config linux .goreleaser.generated.yaml
   goreleaser_config=".goreleaser.generated.yaml"
   ;;
 macos )
-  sed '/#build:linux/,/^$/d; /#build:windows/,/^$/d' .goreleaser.yaml >.goreleaser.generated.yaml
+  filter_goreleaser_config darwin .goreleaser.generated.yaml
   goreleaser_config=".goreleaser.generated.yaml"
   ;;
 windows )
-  sed '/#build:linux/,/^$/d; /#build:macos/,/^$/d' .goreleaser.yaml >.goreleaser.generated.yaml
+  filter_goreleaser_config windows .goreleaser.generated.yaml
   goreleaser_config=".goreleaser.generated.yaml"
   ;;
 esac
