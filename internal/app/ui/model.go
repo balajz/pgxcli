@@ -156,6 +156,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 
 	case ReadyMsg:
+		m.invalidatePendingSequence()
 		m.state = StateInput
 		m.isSpinning = false
 		if msg.Prefix != "" {
@@ -181,7 +182,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleInput()
 
 	case seqTimeoutMsg:
-		if msg.seq == m.pendingSeq {
+		if msg.seq == m.pendingSeq &&
+			(m.state == StatePendingClear || m.state == StatePendingQuit) {
 			m.statusModel, _ = m.statusModel.Update(components.MessageResetMsg{}) // reset status message
 			m.state = StateInput
 		}
@@ -191,6 +193,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if (m.state == StatePendingClear || m.state == StatePendingQuit) &&
 			!key.Matches(msg, m.keys.Clear) &&
 			!key.Matches(msg, m.keys.Interrupt) {
+			m.cancelPendingSequence()
 			m.state = StateInput
 		}
 
@@ -201,6 +204,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if key.Matches(msg, m.keys.Interrupt) {
 			if m.state == StateExecuting {
+				m.invalidatePendingSequence()
 				m.state = StateInput
 				cancelFn := m.cancel
 				return m, func() tea.Msg {
@@ -211,13 +215,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			if m.state == StatePendingQuit {
+				m.cancelPendingSequence()
 				m.state = StateInput
 				return m, func() tea.Msg {
 					return QuitRequestMsg{}
 				}
 			}
 			m.state = StatePendingQuit
-			m.pendingSeq++
+			m.invalidatePendingSequence()
 			n := m.pendingSeq
 			m.statusModel, _ = m.statusModel.Update(components.MessageUpdateMsg{Message: "Press Ctrl+C again to quit"})
 			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
@@ -226,15 +231,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if key.Matches(msg, m.keys.Clear) {
 			if m.state == StateExecuting {
+				m.invalidatePendingSequence()
 				return m, nil
 			}
 			if m.state == StatePendingClear {
+				m.cancelPendingSequence()
 				m.state = StateInput
 				m.input.Reset()
 				return m, nil
 			}
 			m.state = StatePendingClear
-			m.pendingSeq++
+			m.invalidatePendingSequence()
 			n := m.pendingSeq
 			m.statusModel, _ = m.statusModel.Update(components.MessageUpdateMsg{Message: "Press ESC again to clear"})
 			return m, tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
@@ -250,6 +257,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *Model) invalidatePendingSequence() {
+	m.pendingSeq++
+}
+
+func (m *Model) cancelPendingSequence() {
+	m.invalidatePendingSequence()
+	m.statusModel, _ = m.statusModel.Update(components.MessageResetMsg{})
 }
 
 func (m *Model) handleInput() (tea.Model, tea.Cmd) {
