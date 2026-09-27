@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0] - 2026-09-27
+
+### Added
+- **Version Flag details**: Added flags to the version command to display build time, commit hash, and version.
+- **Local CD Command**: Added a local change-directory command.
+
+### Fixed
+- **UI sequence timeouts**: Ignored stale sequence timeouts in the UI.
+- **Exit farewell output**: Suppressed the exit farewell message from non-interactive output, printing it only after a successful cleanup.
+- **PGPORT precedence**: Honored the `PGPORT` environment variable when the port flag is omitted.
+
 ## [0.3.1]
 
 ### Added
