@@ -42,17 +42,205 @@ done
 
 goreleaser_config=".goreleaser.yaml"
 
+filter_goreleaser_config() {
+  local build_id="$1"
+  local output_file="$2"
+
+  # Sections other than builds: also reference build ids through their "ids:"
+  # list (archives, nfpms, ...), so an entry whose ids: no longer holds the
+  # selected build is dropped rather than left dangling.  The whole config is
+  # buffered because an entry may only be emitted once its ids: has been read,
+  # and a section header only once one of its entries survived.
+  if ! awk -v selected_build="$build_id" '
+    { config[NR] = $0 }
+
+    END {
+      line = 1
+      while (line <= NR && !failed) {
+        if (!is_section_key(config[line])) {
+          print config[line]
+          line++
+          continue
+        }
+        for (after = line + 1; after <= NR && !is_section_key(config[after]); after++) ;
+        name = config[line]
+        sub(/:.*/, "", name)
+        if (name == "builds") {
+          print_builds(line, after - 1)
+        } else {
+          print_section(line, after - 1)
+        }
+        line = after
+      }
+      if (failed) exit 1
+    }
+
+    # A section header is a key without an inline value: "builds:", "nfpms:".
+    function is_section_key(s) {
+      return s ~ /^[A-Za-z_][A-Za-z0-9_.-]*:[[:space:]]*(#.*)?$/
+    }
+
+    # Column of the first non-space character, 1-based.
+    function column_of(s, stripped) {
+      stripped = s
+      sub(/^[[:space:]]*/, "", stripped)
+      return length(s) - length(stripped) + 1
+    }
+
+    # A "- " list marker stands in for indentation, so "  - ids: [linux]" is
+    # read as a key indented four columns, one column below the marker itself.
+    function key_column(s) {
+      return is_list_marker(s, column_of(s)) ? column_of(s) + 2 : column_of(s)
+    }
+
+    function is_list_marker(s, column) {
+      return substr(s, column) ~ /^-([ \t]|$)/
+    }
+
+    # Content of a "key: value" line, without the key and the trailing spaces.
+    function value_of(s) {
+      sub(/^[^:]*:[[:space:]]*/, "", s)
+      sub(/[[:space:]]+$/, "", s)
+      return s
+    }
+
+    # Narrow a flow style ids list ("[linux, darwin]") down to the build that
+    # survived the filter.  Returns an empty string when no build survives, in
+    # which case the referencing entry has to be dropped.
+    function narrow_ids(s, items, kept, count, pos, trimmed) {
+      sub(/^[[:space:]]*\[/, "", s)
+      sub(/\][[:space:]]*$/, "", s)
+      count = split(s, items, ",")
+      kept = ""
+      for (pos = 1; pos <= count; pos++) {
+        trimmed = items[pos]
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", trimmed)
+        if (trimmed == selected_build) {
+          kept = kept (kept == "" ? "" : ", ") trimmed
+        }
+      }
+      return kept
+    }
+
+    function fail(message) {
+      printf "filter_goreleaser_config: %s\n", message >"/dev/stderr"
+      failed = 1
+    }
+
+    # Last line of the list entry starting at line start.
+    function entry_end(start, last, column, scan) {
+      column = column_of(config[start])
+      for (scan = start + 1; scan <= last; scan++) {
+        if (is_list_marker(config[scan], column)) return scan - 1
+      }
+      return last
+    }
+
+    # builds: keeps only the entry whose id: is the selected build.
+    function print_builds(header, last, scan, column, first, keep) {
+      column = 0
+      for (first = header + 1; first <= last; first++) {
+        if (is_list_marker(config[first], column_of(config[first]))) {
+          column = column_of(config[first])
+          break
+        }
+      }
+      print config[header]
+      keep = 0
+      for (scan = header + 1; scan <= last; scan++) {
+        if (column != 0 && is_list_marker(config[scan], column)) {
+          keep = value_of(substr(config[scan], key_column(config[scan]))) == selected_build
+          if (keep) print config[scan]
+          continue
+        }
+        # A blank line after the kept build separates it from the next section.
+        if (keep) print config[scan]
+      }
+    }
+
+    # Any other section: entries referencing filtered out builds are dropped and
+    # the remaining ones are narrowed to the selected build.  A section left
+    # without entries is dropped as well, since GoReleaser rejects an empty one.
+    function print_section(header, last, scan, column, first, last_entry, ids_line, ids_value, kept) {
+      for (first = header + 1; first <= last; first++) {
+        if (config[first] !~ /^[[:space:]]*(#|$)/) break
+      }
+      if (first > last) {
+        print config[header]
+        return
+      }
+      column = column_of(config[first])
+      if (!is_list_marker(config[first], column)) {
+        for (scan = header; scan <= last; scan++) print config[scan]
+        return
+      }
+
+      # config[header] stays buffered until an entry survived, so that a fully
+      # filtered out section disappears instead of dangling without entries.
+      kept = 0
+      for (scan = first; scan <= last && !failed; scan = last_entry + 1) {
+        last_entry = entry_end(scan, last, column)
+        ids_line = ids_of(scan, last_entry, column)
+        if (ids_line == 0) {
+          print_entry(scan, last_entry, 0, "", header, first, kept)
+          kept = 1
+          continue
+        }
+        ids_value = value_of(substr(config[ids_line], key_column(config[ids_line])))
+        if (ids_value !~ /^\[/) {
+          fail(sprintf("unsupported ids: syntax on line %d of .goreleaser.yaml", ids_line))
+          return
+        }
+        ids_value = narrow_ids(ids_value)
+        if (ids_value == "") continue
+        kept = print_entry(scan, last_entry, ids_line, ids_value, header, first, kept)
+      }
+    }
+
+    # Line holding the ids: list of the entry, 0 when the entry has none.  Only
+    # the key right below the entry marker counts, nested ids: lists are not
+    # build id references.
+    function ids_of(start, last, column, scan) {
+      for (scan = start; scan <= last; scan++) {
+        if (key_column(config[scan]) == column + 2 && substr(config[scan], column + 2) ~ /^ids:/) {
+          return scan
+        }
+      }
+      return 0
+    }
+
+    function print_entry(start, last, ids_line, ids_value, header, first, kept, scan, column) {
+      if (!kept) {
+        for (scan = header; scan < first; scan++) print config[scan]
+        kept = 1
+      }
+      for (scan = start; scan <= last; scan++) {
+        if (scan != ids_line) {
+          print config[scan]
+          continue
+        }
+        column = key_column(config[scan])
+        print substr(config[scan], 1, column - 1) "ids: [" ids_value "]"
+      }
+      return kept
+    }
+  ' .goreleaser.yaml >"$output_file"; then
+    rm -f "$output_file"
+    return 1
+  fi
+}
+
 case "$platform" in
 linux )
-  sed '/#build:macos/,/^$/d; /#build:windows/,/^$/d' .goreleaser.yaml >.goreleaser.generated.yaml
+  filter_goreleaser_config linux .goreleaser.generated.yaml
   goreleaser_config=".goreleaser.generated.yaml"
   ;;
 macos )
-  sed '/#build:linux/,/^$/d; /#build:windows/,/^$/d' .goreleaser.yaml >.goreleaser.generated.yaml
+  filter_goreleaser_config darwin .goreleaser.generated.yaml
   goreleaser_config=".goreleaser.generated.yaml"
   ;;
 windows )
-  sed '/#build:linux/,/^$/d; /#build:macos/,/^$/d' .goreleaser.yaml >.goreleaser.generated.yaml
+  filter_goreleaser_config windows .goreleaser.generated.yaml
   goreleaser_config=".goreleaser.generated.yaml"
   ;;
 esac
