@@ -1,12 +1,12 @@
 module github.com/balajz/pgxcli
 
-go 1.26.4
+go 1.26.7
 
 require (
 	charm.land/bubbles/v2 v2.2.1
 	charm.land/bubbletea/v2 v2.1.0
 	charm.land/huh/v2 v2.0.3
-	charm.land/lipgloss/v2 v2.0.6
+	charm.land/lipgloss/v2 v2.1.0
 	github.com/alecthomas/chroma/v2 v2.27.0
 	github.com/balajz/bubbline v0.2.1-0.20260529022404-560341275523
 	github.com/balajz/pgxls v0.1.4
